@@ -1,0 +1,2205 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>班级积分管理</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f6bff'/%3E%3Crect x='8' y='16' width='4' height='9' fill='white'/%3E%3Crect x='14' y='12' width='4' height='13' fill='white'/%3E%3Crect x='20' y='8' width='4' height='17' fill='white'/%3E%3C/svg%3E">
+<style>
+:root{
+  --blue:#2f6bff; --blue-d:#1f56e0; --blue-l:#eaf1ff;
+  --bg:#f3f5fa; --card:#ffffff; --line:#e5e9f2; --line-2:#eef1f7;
+  --text:#1f2430; --muted:#7a8194;
+  --green:#18a86b; --green-l:#e8f8f0;
+  --red:#e0454c; --red-l:#fdeaea;
+  --amber:#f0a020;
+  --shadow:0 1px 3px rgba(23,35,64,.06), 0 6px 18px rgba(23,35,64,.05);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,-apple-system,sans-serif;
+  background:var(--bg); color:var(--text); font-size:14px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;font-size:14px}
+input,select,textarea{font-family:inherit;font-size:16px;color:var(--text)}
+.hidden{display:none!important}
+
+/* ============ 登录页 ============ */
+.login-wrap{
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(160deg,#eef3ff 0%,#f6f8fc 45%,#eef7f2 100%);
+  padding:24px 16px;
+}
+.login-card{
+  width:100%; max-width:400px; background:#fff; border-radius:16px; padding:32px 28px 26px;
+  box-shadow:0 12px 40px rgba(30,58,120,.10), 0 2px 6px rgba(30,58,120,.06);
+}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.login-logo .mark{
+  width:38px;height:38px;border-radius:9px;background:var(--blue);display:flex;
+  align-items:center;justify-content:center;
+}
+.login-logo .mark svg{width:20px;height:20px}
+.login-title{font-size:21px;font-weight:600;letter-spacing:.5px}
+.login-sub{color:var(--muted);font-size:13px;margin-bottom:22px;line-height:1.7}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;color:#59617a;margin-bottom:6px}
+.field input{
+  width:100%;height:44px;border:1px solid var(--line);border-radius:9px;padding:0 13px;
+  outline:none;transition:border-color .15s,box-shadow .15s;background:#fcfdff;
+}
+.field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,107,255,.12);background:#fff}
+.login-btn{
+  width:100%;height:46px;border-radius:9px;background:var(--blue);color:#fff;
+  font-size:16px;font-weight:600;margin-top:6px;transition:background .15s;
+}
+.login-btn:hover{background:var(--blue-d)}
+.login-switch{text-align:center;margin-top:16px;font-size:13px;color:var(--muted)}
+.login-switch b{color:var(--blue);cursor:pointer;font-weight:500}
+.login-err{color:var(--red);font-size:13px;min-height:20px;margin-top:8px}
+.login-note{
+  margin-top:18px;padding-top:14px;border-top:1px dashed var(--line);
+  font-size:12px;color:var(--muted);line-height:1.7;
+}
+
+/* ============ 顶部栏 ============ */
+.topbar{
+  height:62px;background:#fff;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;position:sticky;top:0;z-index:20;
+}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand .mark{
+  width:32px;height:32px;border-radius:8px;background:var(--blue);flex:none;
+  display:flex;align-items:center;justify-content:center;
+}
+.brand .mark svg{width:17px;height:17px}
+.brand-txt .t{font-size:17px;font-weight:600;white-space:nowrap}
+.brand-txt .s{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px;line-height:1.3}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block}
+.top-actions{display:flex;align-items:center;gap:8px;flex:none}
+.tbtn{
+  height:34px;padding:0 13px;border-radius:7px;color:#fff;font-size:13.5px;
+  display:inline-flex;align-items:center;gap:5px;transition:opacity .15s;white-space:nowrap;
+}
+.tbtn:hover{opacity:.9}
+.tbtn.sync{background:#2b7cd3}
+.tbtn.export{background:#1f9c63}
+.tbtn.exam{background:#2f6bff}
+.tbtn.profile{background:#eef1f8;color:#2b3247}
+.tbtn svg{width:15px;height:15px}
+
+/* ============ 主体布局 ============ */
+.layout{display:flex;align-items:flex-start;gap:16px;padding:16px;max-width:1500px;margin:0 auto}
+.sidebar{width:270px;flex:none;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border-radius:11px;box-shadow:var(--shadow);border:1px solid #f0f2f7}
+.card-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--line-2);
+}
+.card-hd h3{font-size:15px;font-weight:600;display:flex;align-items:center;gap:7px}
+.card-hd .collapse{color:#aeb6c8;font-size:12px}
+.card-bd{padding:14px 16px 16px}
+
+/* 统计 */
+.stat-row{display:flex;gap:10px;padding:14px 16px}
+.stat{
+  flex:1;background:#f7f9fd;border-radius:9px;padding:10px 12px;border:1px solid #f0f3fa;
+}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat .v{font-size:23px;font-weight:600;line-height:1.25;color:#2461e8}
+.stat.alt .v{color:#1f9c63}
+
+/* 表单 */
+.f{margin-bottom:10px}
+.f label{display:block;font-size:12.5px;color:#69718a;margin-bottom:5px}
+.f input,.f select{
+  width:100%;height:40px;border:1px solid var(--line);border-radius:8px;padding:0 11px;
+  background:#fbfcff;outline:none;font-size:15px;
+}
+.f input:focus,.f select:focus{border-color:#9cb9ff;box-shadow:0 0 0 3px rgba(47,107,255,.09);background:#fff}
+.f-row{display:flex;gap:8px}
+.f-row .f{flex:1;margin-bottom:0}
+.btn-main{
+  width:100%;height:42px;border-radius:8px;background:var(--blue);color:#fff;
+  font-size:15px;font-weight:500;margin-top:12px;transition:background .15s;
+}
+.btn-main:hover{background:var(--blue-d)}
+.btn-green{
+  width:100%;height:40px;border-radius:8px;background:#1f9c63;color:#fff;
+  font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-ghost{
+  width:100%;height:36px;border-radius:8px;background:#f2f4f9;color:#4a5268;
+  font-size:13.5px;margin-top:8px;border:1px solid #e9ecf4;
+}
+.hint-line{font-size:12px;color:#98a0b3;margin-top:8px;line-height:1.6}
+.mobile-tip{display:none;font-size:12.5px;color:#98a0b3;margin-top:8px}
+
+/* 使用提示 */
+.tips{font-size:12.5px;color:#5d647a;line-height:1.85}
+.tips li{margin-bottom:9px;padding-left:2px;list-style:none;display:flex;gap:6px}
+.tips li::before{content:"";width:4px;height:4px;border-radius:50%;background:#b9c3d8;flex:none;margin-top:9px}
+.tips b{color:#2a3350;font-weight:600}
+
+/* ============ 主区域 ============ */
+.main{flex:1;min-width:0}
+.tabs{
+  display:flex;background:#fff;border-radius:11px;padding:5px;gap:4px;
+  box-shadow:var(--shadow);border:1px solid #f0f2f7;margin-bottom:14px;overflow-x:auto;
+}
+.tab{
+  flex:1;min-width:98px;height:40px;border-radius:8px;font-size:14.5px;color:#4d556e;
+  display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;
+  transition:background .15s,color .15s;
+}
+.tab:hover{background:#f4f7fe}
+.tab.on{background:var(--blue);color:#fff;font-weight:500}
+.tab svg{width:15px;height:15px;opacity:.9}
+
+.panel{background:#fff;border-radius:11px;box-shadow:var(--shadow);border:1px solid #f0f2f7;padding:14px 16px 18px}
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.search-wrap{flex:1;min-width:200px;position:relative}
+.search-wrap input{
+  width:100%;height:40px;border:1px solid var(--line);border-radius:8px;
+  padding:0 12px 0 36px;background:#fbfcff;outline:none;font-size:15px;
+}
+.search-wrap input:focus{border-color:#9cb9ff;background:#fff}
+.search-wrap svg{position:absolute;left:12px;top:11px;width:16px;height:16px;color:#a4acbf}
+.seg{display:flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{height:38px;padding:0 13px;font-size:13.5px;color:#5a6279;border-right:1px solid var(--line-2)}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--blue);color:#fff}
+.btn-batch{
+  height:38px;padding:0 14px;border-radius:8px;background:#f0902b;color:#fff;
+  font-size:13.5px;display:inline-flex;align-items:center;gap:6px;
+}
+.btn-batch:hover{background:#e5831f}
+
+/* 表格 */
+.tbl-scroll{width:100%;overflow-x:auto}
+table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:640px}
+th{
+  text-align:left;font-size:13px;color:#7b8298;font-weight:500;
+  padding:10px 10px;background:#f8fafd;white-space:nowrap;
+}
+th:first-child{border-radius:8px 0 0 8px}
+th:last-child{border-radius:0 8px 8px 0}
+td{padding:11px 10px;border-bottom:1px solid #f2f4f9;font-size:14px;vertical-align:middle}
+tr:hover td{background:#fafcff}
+.row-idx{color:#8d94a8;font-size:13px}
+.name-cell{display:flex;align-items:center;gap:8px;min-width:0}
+.avatar{
+  width:28px;height:28px;border-radius:50%;flex:none;display:flex;align-items:center;
+  justify-content:center;font-size:13px;color:#fff;background:#8aa6f7;
+}
+.avatar.g2{background:#7ec8a9}.avatar.g3{background:#f0a8a8}.avatar.g4{background:#c3a8f0}
+.avatar.g5{background:#f0c48a}.avatar.g6{background:#8ac6f0}.avatar.g7{background:#a8d98a}
+.avatar.g8{background:#f0a8d4}.avatar.g9{background:#9aa8f0}
+.name-cell span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.score-num{font-weight:600;color:#2461e8;font-size:15px}
+.tag-group{
+  display:inline-block;padding:2px 8px;border-radius:5px;background:#eef3ff;
+  color:#3a6bd6;font-size:12.5px;white-space:nowrap;
+}
+.muted{color:#a3aabb;font-size:13px}
+.acts{display:flex;gap:4px;flex-wrap:wrap}
+.act{
+  height:27px;padding:0 8px;border-radius:5px;font-size:12.5px;
+  display:inline-flex;align-items:center;gap:3px;
+}
+.act.plus{background:var(--green-l);color:#0f9457}
+.act.minus{background:var(--red-l);color:#c93a41}
+.act.plain{background:#f1f4fb;color:#4d5670}
+.act.del{background:#fff0f0;color:#d14848}
+.act:hover{filter:brightness(.96)}
+
+/* 空态 */
+.empty{padding:52px 16px;text-align:center;color:#9aa2b6}
+.empty .ico{width:52px;height:52px;margin:0 auto 10px;border-radius:12px;background:#f3f6fd;
+  display:flex;align-items:center;justify-content:center;color:#b8c3dc}
+.empty p{font-size:13.5px;margin-bottom:2px}
+.empty .sub{font-size:12.5px;color:#b0b7c8}
+
+/* 分组榜人均 */
+.avg{color:#0f9457;font-weight:600}
+
+/* 积分排座 */
+.seat-wrap{padding:6px 2px}
+.seat-legend{font-size:12.5px;color:#8a92a6;margin-bottom:12px}
+.seat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.seat{
+  border:1px solid #e9edf5;border-radius:9px;padding:10px;background:#fbfcff;
+  display:flex;flex-direction:column;gap:4px;min-height:66px;
+}
+.seat .n{font-size:11.5px;color:#9aa2b6}
+.seat .nm{font-size:14.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seat .sc{font-size:12.5px;color:#2461e8}
+.seat.top1{border-color:#ffe0a6;background:#fffbf1}
+.seat.top2{border-color:#dfe6f5;background:#f9fbff}
+.seat.top3{border-color:#ffe4d0;background:#fff9f4}
+
+/* 商城 */
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.goods{
+  border:1px solid #eceff6;border-radius:10px;padding:13px;background:#fff;
+  display:flex;flex-direction:column;gap:8px;
+}
+.goods .g-name{font-size:14.5px;font-weight:500}
+.goods .g-meta{font-size:12.5px;color:#7f8799;display:flex;justify-content:space-between}
+.goods .g-cost{color:#e0761a;font-weight:600}
+.btn-redeem{height:32px;border-radius:7px;background:var(--blue-l);color:#2a5fd6;font-size:13px}
+.btn-redeem:hover{background:#dde9ff}
+
+/* 积分记录 */
+.rec-summary{font-size:13px;color:#7b8298;margin-left:auto}
+.rec-summary b{color:#2461e8}
+.pager{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 0 2px;flex-wrap:wrap}
+.pager button{height:32px;min-width:32px;padding:0 10px;border-radius:6px;border:1px solid var(--line);
+  background:#fff;color:#4d556e;font-size:13px}
+.pager button:disabled{color:#c3c9d8;cursor:not-allowed}
+.pager button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.pager .info{font-size:12.5px;color:#98a0b3;margin:0 4px}
+
+/* 成绩 */
+.exam-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.exam-select{height:38px;border:1px solid var(--line);border-radius:8px;padding:0 10px;background:#fff;min-width:170px}
+.mini-btn{height:34px;padding:0 12px;border-radius:7px;font-size:13px;display:inline-flex;align-items:center;gap:5px}
+.mini-btn.blue{background:var(--blue);color:#fff}
+.mini-btn.line{border:1px solid var(--line);color:#4d5670;background:#fff}
+.mini-btn.redline{border:1px solid #f5c9c9;color:#d14848;background:#fff}
+.rank-badge{width:22px;height:22px;border-radius:6px;display:inline-flex;align-items:center;
+  justify-content:center;font-size:12px;background:#eff3fb;color:#5b647c}
+.rank-1{background:#fff1d8;color:#c07a00}
+.rank-2{background:#e9eff9;color:#4a6fa5}
+.rank-3{background:#fdeee2;color:#b06a34}
+.delta-up{color:#0f9457;font-size:13px}
+.delta-down{color:#d14848;font-size:13px}
+.delta-flat{color:#9aa2b6;font-size:13px}
+
+/* ============ 弹窗 ============ */
+.modal-back{
+  position:fixed;inset:0;background:rgba(22,30,50,.36);z-index:100;
+  display:flex;align-items:flex-start;justify-content:center;padding:60px 16px 30px;overflow-y:auto;
+}
+.modal{
+  width:100%;max-width:470px;background:#fff;border-radius:14px;
+  box-shadow:0 18px 50px rgba(20,32,60,.22);overflow:hidden;
+}
+.modal.wide{max-width:620px}
+.m-hd{display:flex;align-items:center;justify-content:space-between;padding:17px 20px 6px}
+.m-hd h3{font-size:17px;font-weight:600;display:flex;align-items:center;gap:7px}
+.m-close{width:30px;height:30px;border-radius:6px;color:#9aa2b6;font-size:20px;line-height:1;
+  display:flex;align-items:center;justify-content:center}
+.m-close:hover{background:#f3f5fa}
+.m-bd{padding:8px 20px 4px}
+.m-ft{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 20px 18px}
+.btn-line{height:38px;padding:0 22px;border-radius:8px;background:#f1f3f9;color:#4d556e;font-size:14px}
+.btn-solid{height:38px;padding:0 26px;border-radius:8px;background:#3d82f0;color:#fff;font-size:14px;font-weight:500}
+.btn-solid:hover{background:#2e72df}
+.btn-solid.orange{background:#f0902b;color:#fff}
+.btn-solid.orange:hover{background:#e5831f}
+.btn-solid:disabled{background:#c8cfdd;cursor:not-allowed}
+
+/* 学生信息行 */
+.stu-line{display:flex;justify-content:space-between;align-items:center;padding:2px 0 14px;
+  font-size:13.5px;color:#7b8298}
+.stu-line b{color:#2a3350;font-size:14.5px;font-weight:600}
+/* 加减分切换 */
+.op-switch{display:flex;gap:10px;margin-bottom:16px}
+.op-btn{
+  flex:1;height:42px;border-radius:8px;border:1px solid #dde3ee;background:#fff;
+  font-size:15px;color:#5d647a;
+}
+.op-btn.add.on{border-color:#21b06a;color:#0f9457;background:#f3fcf7;font-weight:500}
+.op-btn.sub.on{border-color:#e5484d;color:#d14848;background:#fff6f6;font-weight:500}
+/* 快捷分数 */
+.qlabel{font-size:12.5px;color:#8a92a6;margin:2px 0 8px}
+.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}
+.quick{
+  height:40px;border:1px solid #e2e7f1;border-radius:8px;background:#fbfcff;font-size:15px;color:#39405a;
+}
+.quick:hover{border-color:#b9c9ee;background:#fff}
+.quick.on{border-color:#3d82f0;color:#2563e8;background:#eff5ff;font-weight:600}
+.custom-input{
+  width:100%;height:44px;border:1px solid #e2e7f1;border-radius:8px;padding:0 12px;background:#fbfcff;outline:none;
+}
+.custom-input:focus{border-color:#9cb9ff;background:#fff}
+.remark{
+  width:100%;min-height:78px;border:1px solid #e2e7f1;border-radius:8px;padding:10px 12px;
+  background:#fbfcff;outline:none;resize:vertical;line-height:1.6;font-size:15px;
+}
+.remark:focus{border-color:#9cb9ff;background:#fff}
+.err-tip{color:var(--red);font-size:12.5px;margin-top:6px;min-height:17px}
+
+/* 批量弹窗 */
+.batch-switch{display:flex;gap:10px;margin-bottom:14px}
+.batch-btn2{flex:1;height:42px;border:1px solid #dde3ee;border-radius:8px;background:#fff;font-size:15px;color:#5d647a}
+.batch-btn2.add.on{border-color:#21b06a;color:#0f9457;background:#f3fcf7;font-weight:500}
+.batch-btn2.sub.on{border-color:#e5484d;color:#d14848;background:#fff6f6;font-weight:500}
+.target-label{font-size:12.5px;color:#8a92a6;margin-bottom:8px}
+.target-switch{display:flex;gap:10px;margin-bottom:14px}
+.target-btn{flex:1;height:38px;border:1px solid #dde3ee;border-radius:8px;background:#fff;font-size:14px;color:#5d647a}
+.target-btn.on{border-color:#3d82f0;color:#2563e8;background:#eff5ff;font-weight:500}
+.batch-reason{width:100%;height:40px;border:1px solid #e2e7f1;border-radius:8px;padding:0 12px;background:#fbfcff;outline:none}
+.batch-bar{display:flex;align-items:center;gap:14px;padding:10px 0 8px;font-size:12.5px;color:#7b8298}
+.batch-bar .link{color:#2461e8;cursor:pointer}
+.batch-bar .cnt{margin-left:auto}
+.batch-list{max-height:270px;overflow-y:auto;border:1px solid #eef1f7;border-radius:9px;background:#fcfdff}
+.batch-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #f1f4f9;cursor:pointer}
+.batch-item:last-child{border-bottom:none}
+.batch-item:hover{background:#f7faff}
+.chk{width:18px;height:18px;border-radius:4px;border:1.5px solid #ccd4e4;background:#fff;
+  display:flex;align-items:center;justify-content:center;flex:none}
+.chk.on{background:#3d82f0;border-color:#3d82f0}
+.chk.on::after{content:"";width:9px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;
+  transform:rotate(-45deg) translateY(-1px)}
+.batch-item .bi-name{flex:1;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.batch-item .bi-sc{font-size:12.5px;color:#8a92a6}
+.batch-score-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+.batch-score-row input{height:40px;border:1px solid #e2e7f1;border-radius:8px;padding:0 12px;background:#fbfcff;width:120px;outline:none}
+
+/* 历史 */
+.hist-list{max-height:400px;overflow-y:auto}
+.hist-item{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid #f2f4f9}
+.hist-item:last-child{border-bottom:none}
+.hist-item .h-time{font-size:12.5px;color:#9aa2b6}
+.hist-item .h-reason{font-size:13.5px;color:#3f4760;margin-top:2px;word-break:break-all}
+.hist-item .h-num{font-size:15px;font-weight:600;white-space:nowrap}
+.h-num.up{color:#0f9457}.h-num.down{color:#d14848}
+
+/* 编辑 */
+.edit-grid .f{margin-bottom:12px}
+.edit-grid .f input,.edit-grid .f select{height:42px;font-size:15px}
+
+/* 个人中心 */
+.prof-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f2f4f9;font-size:13.5px}
+.prof-row span{color:#7b8298}
+.prof-row b{font-weight:500}
+.prof-acts{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+
+/* Toast */
+.toast{
+  position:fixed;left:50%;bottom:38px;transform:translateX(-50%) translateY(10px);
+  background:rgba(30,38,58,.94);color:#fff;padding:10px 18px;border-radius:9px;font-size:13.5px;
+  opacity:0;transition:opacity .22s,transform .22s;z-index:300;pointer-events:none;max-width:80vw;text-align:center;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* 响应式 */
+@media (max-width:960px){
+  .layout{flex-direction:column;align-items:stretch;padding:12px;gap:12px}
+  .main{width:100%;max-width:100%;order:1}
+  .sidebar{order:2}
+  .panel{padding:12px 12px 16px}
+  .mobile-tip{display:block}
+  .tabs{max-width:100%;overflow-x:auto}
+  .sidebar{width:100%;position:static}
+  .topbar{height:auto;padding:10px 12px;flex-wrap:wrap;gap:8px}
+  .brand .mark{width:28px;height:28px}
+  .brand-txt .t{font-size:15.5px}
+  .top-actions{width:100%;justify-content:flex-end;gap:6px}
+  .tbtn{height:32px;padding:0 10px;font-size:12.5px}
+  .seat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat .v{font-size:20px}
+  .sidebar{display:grid;grid-template-columns:1fr;gap:12px}
+}
+@media (max-width:520px){
+  .tabs .tab{min-width:0;font-size:13px;padding:0 8px}
+  .tab .t-txt{font-size:12.5px}
+  .toolbar{gap:8px}
+  .seg button{padding:0 9px;font-size:12.5px}
+  .btn-batch{padding:0 10px;font-size:12.5px}
+  .quick-grid{gap:7px}
+  .modal-back{padding:26px 10px 20px}
+  .m-bd{padding:8px 15px 4px}
+  .m-ft{padding:14px 15px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= 登录 ================= -->
+<div class="login-wrap" id="loginView">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="13" width="4" height="8" fill="#fff" rx="1"/><rect x="10" y="9" width="4" height="12" fill="#fff" rx="1"/><rect x="17" y="4" width="4" height="17" fill="#fff" rx="1"/></svg>
+      </div>
+      <div class="login-title">班级积分管理</div>
+    </div>
+    <p class="login-sub">登录后管理本班学生积分、小组排名与成绩分析</p>
+    <div class="field">
+      <label>账号</label>
+      <input id="loginUser" type="text" placeholder="请输入账号，如 banji01" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>密码</label>
+      <input id="loginPass" type="password" placeholder="请输入密码" autocomplete="current-password">
+    </div>
+    <div class="field hidden" id="regPassWrap">
+      <label>确认密码</label>
+      <input id="loginPass2" type="password" placeholder="再次输入密码">
+    </div>
+    <div class="login-err" id="loginErr"></div>
+    <button class="login-btn" id="loginBtn">登录</button>
+    <div class="login-switch" id="loginSwitch">还没有账号？<b>立即注册</b></div>
+    <p class="login-note">
+      数据保存在本机浏览器，按账号独立存储，同一台电脑换账号登录互不影响；清除浏览器数据会同时清除积分数据，建议定期导出备份。
+    </p>
+  </div>
+</div>
+
+<!-- ================= 主系统 ================= -->
+<div id="appView" class="hidden">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="13" width="4" height="8" fill="#fff" rx="1"/><rect x="10" y="9" width="4" height="12" fill="#fff" rx="1"/><rect x="17" y="4" width="4" height="17" fill="#fff" rx="1"/></svg>
+      </div>
+      <div class="brand-txt">
+        <div class="t">班级积分管理</div>
+        <div class="s"><span class="dot"></span><span id="curUser">—</span><span>·</span><span>本地已保存</span></div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="tbtn sync" id="btnSync">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6" stroke-width="2"/></svg>同步
+      </button>
+      <button class="tbtn export" id="btnExport">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 20h16"/></svg>导出
+      </button>
+      <button class="tbtn exam" id="btnExam">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 19V7"/><path d="M10 19V11"/><path d="M16 19V4"/><path d="M22 19V9"/></svg>成绩
+      </button>
+      <button class="tbtn profile" id="btnProfile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2b3247" stroke-width="2"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 21c1-4 4-6 7.5-6s6.5 2 7.5 6"/></svg>个人中心
+      </button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+      <div class="card">
+        <div class="stat-row">
+          <div class="stat">
+            <div class="k">学生总数</div>
+            <div class="v" id="statStu">0</div>
+          </div>
+          <div class="stat alt">
+            <div class="k">积分记录</div>
+            <div class="v" id="statLog">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><h3>新增学生</h3><span class="collapse">收起</span></div>
+        <div class="card-bd">
+          <div class="f"><label>学生姓名</label><input id="inName" placeholder="学生姓名" maxlength="20"></div>
+          <div class="f-row">
+            <div class="f"><label>班级小组（选填）</label>
+              <select id="inGroup">
+                <option value="">未分组</option>
+              </select>
+            </div>
+            <div class="f"><label>性别（选填）</label>
+              <select id="inGender">
+                <option value="">未填写</option>
+                <option>男</option>
+                <option>女</option>
+              </select>
+            </div>
+          </div>
+          <div class="f" style="margin-top:10px"><label>班级职务（选填）</label><input id="inDuty" placeholder="如：班长 / 组长" maxlength="20"></div>
+          <button class="btn-main" id="btnAddStudent">添加学生</button>
+          <div class="hint-line">回车也可快速添加</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><h3>批量导入</h3><span class="collapse">展开</span></div>
+        <div class="card-bd">
+          <p class="hint-line" style="margin-top:0;margin-bottom:10px">上传 Excel 批量导入 / 更新学生（首行可为表头，列：姓名·性别·组号·职务）</p>
+          <input type="file" id="fileExcel" accept=".csv,.txt,.xls,.xlsx" class="hidden">
+          <button class="btn-green" id="btnPickFile">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:15px;height:15px"><path d="M4 7h6l2 2h8v10H4z" fill="#fff" stroke="none"/></svg>选择 Excel 文件
+          </button>
+          <button class="btn-ghost" id="btnTpl">下载导入模板</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><h3>使用提示</h3><span class="collapse">收起</span></div>
+        <div class="card-bd">
+          <ul class="tips">
+            <li><span><b>批量导入学生</b>：上传花名册，模板列为 姓名·性别·组号·职务（首行可为表头，重复姓名自动更新）；也可先点「下载导入模板」填写。<br>纯网页版可直接导入 CSV 文件，Excel 请另存为 CSV 后再导入。</span></li>
+            <li><span><b>顶部切换</b>可查看「小组榜」「积分排座」「积分商城」「积分记录」。</span></li>
+            <li><span>排行榜中点击「加分」「减分」进行积分操作，必须填写备注。</span></li>
+            <li><span>「编辑」可修改姓名 / 小组 / 职务 / 性别，「删除」可移出该学生。</span></li>
+            <li><span>顶部「批量加减」可勾选多名学生（或整组）一次加减同一分数。</span></li>
+            <li><span>「积分商城」可添加礼物，对学生或小组兑换并自动扣积分。</span></li>
+            <li><span>点「导出」生成 WPS / Excel 可打开的表格文件，含学生榜、小组榜、积分记录。</span></li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 主区域 -->
+    <main class="main">
+      <nav class="tabs" id="tabs">
+        <button class="tab on" data-tab="students">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c.9-3.6 3.4-5.4 6.5-5.4s5.6 1.8 6.5 5.4"/><circle cx="18" cy="9.5" r="2.3"/><path d="M16.5 14.5c2.6.3 4.4 1.9 5 4.5"/></svg>
+          <span class="t-txt">学生榜</span>
+        </button>
+        <button class="tab" data-tab="groups">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7.5" r="2.6"/><circle cx="17" cy="7.5" r="2.6"/><path d="M2 19c.6-3 2.6-4.6 5-4.6s4.4 1.6 5 4.6"/><path d="M12 19c.6-3 2.6-4.6 5-4.6s4.4 1.6 5 4.6"/></svg>
+          <span class="t-txt">小组榜</span>
+        </button>
+        <button class="tab" data-tab="seats">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M8 16.5h.01"/></svg>
+          <span class="t-txt">积分排座</span>
+        </button>
+        <button class="tab" data-tab="shop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h16l-1.2 11H5.2z"/><path d="M8.5 8V6.4a3.5 3.5 0 0 1 7 0V8"/></svg>
+          <span class="t-txt">积分商城</span>
+        </button>
+        <button class="tab" data-tab="records">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+          <span class="t-txt">积分记录</span>
+        </button>
+      </nav>
+
+      <!-- ===== 学生榜 ===== -->
+      <section class="panel" id="panel-students">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#a4acbf" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg>
+            <input id="searchStu" placeholder="搜索学生姓名 / 小组快速定位...">
+          </div>
+          <div class="seg" id="sortStu">
+            <button class="on" data-sort="desc">高→低</button>
+            <button data-sort="asc">低→高</button>
+            <button data-sort="time">按时间</button>
+          </div>
+          <button class="btn-batch" id="btnBatchStu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:14px;height:14px"><path d="M4 7h10M4 12h10M4 17h7"/><path d="M18 6v6M15 9h6"/></svg>批量加减
+          </button>
+        </div>
+        <div class="mobile-tip">手机上左右滑动表格可查看「操作」按钮</div>
+        <div class="tbl-scroll">
+          <table>
+            <colgroup>
+              <col style="width:8%"><col style="width:20%"><col style="width:18%">
+              <col style="width:18%"><col style="width:10%"><col style="width:26%">
+            </colgroup>
+            <thead>
+              <tr><th>排名</th><th>姓名</th><th>班级小组</th><th>班级职务</th><th>积分</th><th>操作</th></tr>
+            </thead>
+            <tbody id="tbodyStu"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="emptyStu">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#b8c3dc" stroke-width="1.8" style="width:26px;height:26px"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1-3.8 4-5.8 7.5-5.8s6.5 2 7.5 5.8"/><path d="M18 4v4M16 6h4"/></svg></div>
+          <p>还没有学生</p>
+          <div class="sub">先在左侧「新增学生」添加，或批量导入花名册</div>
+        </div>
+      </section>
+
+      <!-- ===== 小组榜 ===== -->
+      <section class="panel hidden" id="panel-groups">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#a4acbf" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg>
+            <input id="searchGrp" placeholder="搜索小组名称...">
+          </div>
+          <div class="seg" id="sortGrp">
+            <button class="on" data-sort="desc">高→低</button>
+            <button data-sort="asc">低→高</button>
+            <button data-sort="time">按时间</button>
+          </div>
+          <button class="btn-batch" id="btnBatchGrp">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:14px;height:14px"><path d="M4 7h10M4 12h10M4 17h7"/><path d="M18 6v6M15 9h6"/></svg>批量加减
+          </button>
+        </div>
+        <div class="tbl-scroll">
+          <table>
+            <colgroup>
+              <col style="width:12%"><col style="width:28%"><col style="width:20%"><col style="width:20%"><col style="width:20%">
+            </colgroup>
+            <thead>
+              <tr><th>排名</th><th>小组</th><th>总人数</th><th>总积分</th><th>人均积分</th></tr>
+            </thead>
+            <tbody id="tbodyGrp"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== 积分排座 ===== -->
+      <section class="panel hidden" id="panel-seats">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#a4acbf" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg>
+            <input id="searchSeat" placeholder="搜索学生姓名 / 小组...">
+          </div>
+          <button class="mini-btn line" id="btnSeatRefresh">按积分重排</button>
+        </div>
+        <div class="seat-wrap">
+          <div class="seat-legend">按总积分从高到低自动生成座位顺序，积分越高座位越靠前；每次加减分后可点「按积分重排」刷新。</div>
+          <div class="seat-grid" id="seatGrid"></div>
+          <div class="empty" id="emptySeat" style="padding:36px 16px">
+            <p>暂无学生</p><div class="sub">添加学生后自动生成座位表</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 积分商城 ===== -->
+      <section class="panel hidden" id="panel-shop">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#a4acbf" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg>
+            <input id="searchShop" placeholder="搜索奖品名称...">
+          </div>
+          <button class="btn-batch" id="btnAddGoods">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:14px;height:14px"><path d="M12 5v14M5 12h14"/></svg>添加奖品
+          </button>
+        </div>
+        <div class="shop-grid" id="shopGrid"></div>
+        <div class="empty" id="emptyShop" style="padding:36px 16px">
+          <p>还没有奖品</p><div class="sub">点右上「添加奖品」，设置所需积分与库存</div>
+        </div>
+
+        <div style="margin-top:20px">
+          <h4 style="font-size:14px;font-weight:600;margin-bottom:8px">最近兑换记录</h4>
+          <div class="tbl-scroll">
+            <table>
+              <colgroup><col style="width:22%"><col style="width:20%"><col style="width:26%"><col style="width:16%"><col style="width:16%"></colgroup>
+              <thead><tr><th>时间</th><th>兑换对象</th><th>奖品</th><th>扣除积分</th><th>所属小组</th></tr></thead>
+              <tbody id="tbodyRedeemLog"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="emptyRedeem" style="padding:26px 16px">
+            <p>暂无兑换记录</p><div class="sub">学生或小组兑换奖品后，这里会留下记录</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 积分记录 ===== -->
+      <section class="panel hidden" id="panel-records">
+        <div class="toolbar">
+          <div class="seg" id="recRange">
+            <button class="on" data-range="all">全部</button>
+            <button data-range="week">本周</button>
+            <button data-range="month">本月</button>
+            <button data-range="custom">自定义</button>
+          </div>
+          <div class="search-wrap" style="min-width:150px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#a4acbf" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg>
+            <input id="searchRec" placeholder="按学生姓名筛选...">
+          </div>
+          <button class="mini-btn line" id="btnExportRec">导出记录</button>
+          <div class="rec-summary" id="recSummary">区间内合计 <b>0</b> 条，净变动 <b>0</b> 分</div>
+        </div>
+        <div id="customRange" style="display:none;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+          <input type="date" id="recStart" class="exam-select" style="min-width:140px">
+          <span class="muted">至</span>
+          <input type="date" id="recEnd" class="exam-select" style="min-width:140px">
+        </div>
+        <div class="tbl-scroll">
+          <table>
+            <colgroup><col style="width:24%"><col style="width:16%"><col style="width:13%"><col style="width:31%"><col style="width:16%"></colgroup>
+            <thead><tr><th>时间</th><th>学生</th><th>分数变动</th><th>变动原因</th><th>操作</th></tr></thead>
+            <tbody id="tbodyRec"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="emptyRec" style="padding:36px 16px">
+          <p>暂无积分记录</p><div class="sub">加分或减分后，这里会留下完整流水</div>
+        </div>
+        <div class="pager" id="recPager"></div>
+      </section>
+
+      <!-- ===== 成绩 ===== -->
+      <section class="panel hidden" id="panel-exam">
+        <div class="exam-bar">
+          <select class="exam-select" id="examSelect"></select>
+          <button class="mini-btn blue" id="btnImportExam">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" style="width:13px;height:13px"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 20h16"/></svg>导入成绩
+          </button>
+          <button class="mini-btn redline" id="btnDelExam">删除该次考试</button>
+        </div>
+        <div class="search-wrap" style="margin-bottom:14px;max-width:420px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#a4acbf" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg>
+          <input id="searchExam" placeholder="搜索学生姓名 / 小组...">
+        </div>
+
+        <div style="display:grid;gap:18px">
+          <div>
+            <h4 style="font-size:14px;font-weight:600;margin-bottom:8px">班级成绩</h4>
+            <div class="tbl-scroll">
+              <table>
+                <colgroup><col style="width:10%"><col style="width:22%"><col style="width:16%"><col style="width:14%"><col style="width:14%"><col style="width:14%"><col style="width:10%"></colgroup>
+                <thead><tr><th>排名</th><th>姓名</th><th>班级小组</th><th>本次分数</th><th>上次分数</th><th>进退步</th><th>操作</th></tr></thead>
+                <tbody id="tbodyExam"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="emptyExam" style="padding:34px 16px">
+              <p>还没有成绩数据</p><div class="sub">点「导入成绩」粘贴「姓名 + 分数」即可批量录入</div>
+            </div>
+          </div>
+
+          <div>
+            <h4 style="font-size:14px;font-weight:600;margin-bottom:8px">小组平均分</h4>
+            <div class="tbl-scroll">
+              <table>
+                <colgroup><col style="width:12%"><col style="width:28%"><col style="width:20%"><col style="width:20%"><col style="width:20%"></colgroup>
+                <thead><tr><th>排名</th><th>小组</th><th>参评人数</th><th>总分</th><th>平均分</th></tr></thead>
+                <tbody id="tbodyExamGrp"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <h4 style="font-size:14px;font-weight:600;margin-bottom:8px">班级进退步榜</h4>
+            <div class="tbl-scroll">
+              <table>
+                <colgroup><col style="width:12%"><col style="width:24%"><col style="width:18%"><col style="width:16%"><col style="width:30%"></colgroup>
+                <thead><tr><th>类型</th><th>姓名</th><th>班级小组</th><th>变化</th><th>积分操作</th></tr></thead>
+                <tbody id="tbodyTrend"></tbody>
+              </table>
+            </div>
+            <div class="empty" id="emptyTrend" style="padding:30px 16px">
+              <p>需要两次以上考试数据才能对比进退步</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- ================= 弹窗容器 ================= -->
+<div class="modal-back hidden" id="scoreModalBack">
+  <div class="modal">
+    <div class="m-hd">
+      <h3><svg viewBox="0 0 24 24" fill="none" stroke="#2f6bff" stroke-width="2" style="width:17px;height:17px"><path d="M12 4v16M4 12h16"/></svg><span id="scoreModalTitle">积分操作</span></h3>
+      <button class="m-close" data-close="scoreModalBack">×</button>
+    </div>
+    <div class="m-bd">
+      <div class="stu-line"><span>当前学生</span><b id="scoreStuName">—</b></div>
+      <div class="op-switch">
+        <button class="op-btn add on" id="opAdd">+ 加分</button>
+        <button class="op-btn sub" id="opSub">− 减分</button>
+      </div>
+      <div class="qlabel">快捷分数</div>
+      <div class="quick-grid" id="quickGrid">
+        <button class="quick" data-q="1">1</button>
+        <button class="quick" data-q="2">2</button>
+        <button class="quick" data-q="3">3</button>
+        <button class="quick" data-q="5">5</button>
+        <button class="quick" data-q="10">10</button>
+        <button class="quick" data-q="20">20</button>
+        <button class="quick" data-q="50">50</button>
+        <button class="quick" data-q="100">100</button>
+      </div>
+      <div class="qlabel">自定义分数</div>
+      <input class="custom-input" id="scoreInput" type="number" min="0" step="1" placeholder="输入本次变动分数">
+      <div class="qlabel" style="margin-top:14px">操作原因 / 备注（必填）</div>
+      <textarea class="remark" id="scoreRemark" placeholder="如：主动打扫卫生、作业未完成、课堂表现积极..."></textarea>
+      <div class="err-tip" id="scoreErr"></div>
+    </div>
+    <div class="m-ft">
+      <button class="btn-line" data-close="scoreModalBack">取消</button>
+      <button class="btn-solid" id="btnSubmitScore">确认提交</button>
+    </div>
+  </div>
+</div>
+
+<!-- 批量加减 -->
+<div class="modal-back hidden" id="batchModalBack">
+  <div class="modal">
+    <div class="m-hd"><h3><span>批量加减积分</span></h3><button class="m-close" data-close="batchModalBack">×</button></div>
+    <div class="m-bd">
+      <div class="batch-switch">
+        <button class="batch-btn2 add on" id="batchAdd">+ 批量加分</button>
+        <button class="batch-btn2 sub" id="batchSub">− 批量减分</button>
+      </div>
+      <div class="target-label">选择对象</div>
+      <div class="target-switch">
+        <button class="target-btn on" id="targetStu">按学生</button>
+        <button class="target-btn" id="targetGrp">按小组</button>
+      </div>
+      <input class="batch-reason" id="batchReason" placeholder="统一原因（选填）">
+      <div class="batch-bar">
+        <span class="link" id="batchAll">全选</span>
+        <span class="link" id="batchNone">全不选</span>
+        <span class="cnt">已选 <b id="batchCount">0</b> 人</span>
+      </div>
+      <div class="batch-list" id="batchList"></div>
+      <div class="batch-score-row">
+        <span style="font-size:13px;color:#7b8298">本次分数</span>
+        <input type="number" id="batchScore" min="1" step="1" value="10">
+        <span style="font-size:13px;color:#7b8298">分</span>
+      </div>
+      <div class="err-tip" id="batchErr"></div>
+    </div>
+    <div class="m-ft">
+      <button class="btn-line" data-close="batchModalBack">取消</button>
+      <button class="btn-solid orange" id="btnBatchSubmit">确认批量操作</button>
+    </div>
+  </div>
+</div>
+
+<!-- 历史 -->
+<div class="modal-back hidden" id="histModalBack">
+  <div class="modal wide">
+    <div class="m-hd"><h3><span id="histTitle">积分历史</span></h3><button class="m-close" data-close="histModalBack">×</button></div>
+    <div class="m-bd"><div class="hist-list" id="histList"></div></div>
+    <div class="m-ft"><button class="btn-line" data-close="histModalBack">关闭</button></div>
+  </div>
+</div>
+
+<!-- 编辑学生 -->
+<div class="modal-back hidden" id="editModalBack">
+  <div class="modal">
+    <div class="m-hd"><h3><span>编辑学生信息</span></h3><button class="m-close" data-close="editModalBack">×</button></div>
+    <div class="m-bd edit-grid">
+      <div class="f"><label>学生姓名</label><input id="editName" maxlength="20"></div>
+      <div class="f-row">
+        <div class="f"><label>班级小组</label><select id="editGroup"></select></div>
+        <div class="f"><label>性别</label>
+          <select id="editGender"><option value="">未填写</option><option>男</option><option>女</option></select>
+        </div>
+      </div>
+      <div class="f" style="margin-top:12px"><label>班级职务</label><input id="editDuty" placeholder="如：班长 / 组长" maxlength="20"></div>
+      <div class="f"><label>总积分（直接修改会记录一条调整流水）</label><input id="editScore" type="number" step="1"></div>
+      <div class="err-tip" id="editErr"></div>
+    </div>
+    <div class="m-ft">
+      <button class="btn-line" data-close="editModalBack">取消</button>
+      <button class="btn-solid" id="btnSaveEdit">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 确认 -->
+<div class="modal-back hidden" id="confirmModalBack">
+  <div class="modal" style="max-width:380px">
+    <div class="m-hd"><h3><span id="confirmTitle">确认操作</span></h3><button class="m-close" data-close="confirmModalBack">×</button></div>
+    <div class="m-bd"><p id="confirmText" style="font-size:14px;color:#4d556e;line-height:1.7;padding:4px 0 10px"></p></div>
+    <div class="m-ft">
+      <button class="btn-line" data-close="confirmModalBack">取消</button>
+      <button class="btn-solid" id="btnConfirmOk" style="background:#e0454c">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- 个人中心 -->
+<div class="modal-back hidden" id="profModalBack">
+  <div class="modal">
+    <div class="m-hd"><h3><span>个人中心</span></h3><button class="m-close" data-close="profModalBack">×</button></div>
+    <div class="m-bd">
+      <div class="prof-row"><span>当前账号</span><b id="profUser">—</b></div>
+      <div class="prof-row"><span>学生总数</span><b id="profStu">0</b></div>
+      <div class="prof-row"><span>积分记录</span><b id="profLog">0</b></div>
+      <div class="prof-row"><span>数据存储</span><b>本机浏览器（按账号隔离）</b></div>
+      <div class="prof-acts">
+        <button class="btn-ghost" id="btnChangePwd">修改密码</button>
+        <button class="btn-ghost" id="btnClearData" style="color:#c93a41">清空本账号数据</button>
+        <button class="btn-ghost" id="btnLogout">退出登录</button>
+      </div>
+    </div>
+    <div class="m-ft"><button class="btn-line" data-close="profModalBack">关闭</button></div>
+  </div>
+</div>
+
+<!-- 添加奖品 -->
+<div class="modal-back hidden" id="goodsModalBack">
+  <div class="modal">
+    <div class="m-hd"><h3><span>添加奖品</span></h3><button class="m-close" data-close="goodsModalBack">×</button></div>
+    <div class="m-bd">
+      <div class="f"><label>奖品名称</label><input id="gName" placeholder="如：免作业券 / 文具一套" maxlength="20"></div>
+      <div class="f-row">
+        <div class="f"><label>所需积分</label><input id="gCost" type="number" min="1" step="1" value="50"></div>
+        <div class="f"><label>库存数量</label><input id="gStock" type="number" min="1" step="1" value="10"></div>
+      </div>
+      <div class="err-tip" id="gErr"></div>
+    </div>
+    <div class="m-ft">
+      <button class="btn-line" data-close="goodsModalBack">取消</button>
+      <button class="btn-solid" id="btnSaveGoods">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- 兑换 -->
+<div class="modal-back hidden" id="redeemModalBack">
+  <div class="modal">
+    <div class="m-hd"><h3><span>积分兑换</span></h3><button class="m-close" data-close="redeemModalBack">×</button></div>
+    <div class="m-bd">
+      <div class="stu-line"><span>奖品</span><b id="redeemGoodsName">—</b></div>
+      <div class="target-label">兑换对象</div>
+      <div class="target-switch">
+        <button class="target-btn on" id="redeemByStu">按学生</button>
+        <button class="target-btn" id="redeemByGrp">按小组</button>
+      </div>
+      <div class="f"><label id="redeemPickLabel">选择学生</label><select id="redeemTarget"></select></div>
+      <div class="hint-line" id="redeemHint">—</div>
+      <div class="err-tip" id="redeemErr"></div>
+    </div>
+    <div class="m-ft">
+      <button class="btn-line" data-close="redeemModalBack">取消</button>
+      <button class="btn-solid" id="btnRedeem">确认兑换</button>
+    </div>
+  </div>
+</div>
+
+<!-- 导入成绩 -->
+<div class="modal-back hidden" id="examModalBack">
+  <div class="modal wide">
+    <div class="m-hd"><h3><span>导入考试成绩</span></h3><button class="m-close" data-close="examModalBack">×</button></div>
+    <div class="m-bd">
+      <div class="f"><label>考试名称</label><input id="examName" placeholder="如：期中考试 / 第一次月考"></div>
+      <div class="f"><label>粘贴成绩数据（每行：姓名 分数，可用空格、制表符或逗号分隔）</label>
+        <textarea class="remark" id="examData" style="min-height:170px" placeholder="张三 96&#10;李四 88&#10;王五,79"></textarea>
+      </div>
+      <div class="err-tip" id="examErr"></div>
+    </div>
+    <div class="m-ft">
+      <button class="btn-line" data-close="examModalBack">取消</button>
+      <button class="btn-solid" id="btnSaveExam">保存成绩</button>
+    </div>
+  </div>
+</div>
+
+<!-- 修改密码 -->
+<div class="modal-back hidden" id="pwdModalBack">
+  <div class="modal" style="max-width:400px">
+    <div class="m-hd"><h3><span>修改密码</span></h3><button class="m-close" data-close="pwdModalBack">×</button></div>
+    <div class="m-bd">
+      <div class="f"><label>原密码</label><input id="pwdOld" type="password"></div>
+      <div class="f"><label>新密码（至少 4 位）</label><input id="pwdNew" type="password"></div>
+      <div class="err-tip" id="pwdErr"></div>
+    </div>
+    <div class="m-ft">
+      <button class="btn-line" data-close="pwdModalBack">取消</button>
+      <button class="btn-solid" id="btnSavePwd">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 基础工具 ================= */
+const GROUPS = ['第1组','第2组','第3组','第4组','第5组','第6组','第7组','第8组','第9组'];
+const ACC_KEY = 'jf_accounts_v1';
+const DATA_KEY = u => 'jf_data_v1_' + u;
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const uid = () => Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3);
+const pad = n => (n < 10 ? '0' + n : '' + n);
+const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function fmtTime(ts){ const d = new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function fmtDay(ts){ const d = new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function num(n){ const v = Number(n); if(!isFinite(v)) return '0'; return (Math.round(v*100)/100).toString(); }
+
+let toastTimer = null;
+function toast(msg){
+  const el = $('#toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+function openModal(id){ $('#' + id).classList.remove('hidden'); }
+function closeModal(id){ $('#' + id).classList.add('hidden'); }
+let confirmCb = null;
+function confirmAction(title, text, cb){
+  $('#confirmTitle').textContent = title;
+  $('#confirmText').textContent = text;
+  confirmCb = cb;
+  openModal('confirmModalBack');
+}
+
+/* ================= 账号 ================= */
+function readAccounts(){
+  try { return JSON.parse(localStorage.getItem(ACC_KEY) || '{}') || {}; } catch(e){ return {}; }
+}
+function writeAccounts(obj){ localStorage.setItem(ACC_KEY, JSON.stringify(obj)); }
+
+let authMode = 'login';
+let S = { user:null, students:[], goods:[], exams:[], activeExam:null, createdAt:0 };
+let ui = {
+  tab:'students', sortStu:'desc', sortGrp:'desc',
+  searchStu:'', searchGrp:'', searchSeat:'', searchShop:'', searchRec:'', searchExam:'',
+  recRange:'all', recPage:1, recSize:10
+};
+
+function setAuthMode(mode){
+  authMode = mode;
+  const btn = $('#loginBtn'), sw = $('#loginSwitch');
+  if(mode === 'login'){
+    btn.textContent = '登录';
+    sw.innerHTML = '还没有账号？<b>立即注册</b>';
+    $('#regPassWrap').classList.add('hidden');
+  } else {
+    btn.textContent = '注册并登录';
+    sw.innerHTML = '已有账号？<b>返回登录</b>';
+    $('#regPassWrap').classList.remove('hidden');
+  }
+  $('#loginErr').textContent = '';
+}
+
+function doAuth(){
+  const user = $('#loginUser').value.trim();
+  const pass = $('#loginPass').value;
+  const pass2 = $('#loginPass2').value;
+  const err = $('#loginErr');
+  err.textContent = '';
+  if(!user){ err.textContent = '请输入账号'; return; }
+  if(user.length < 2){ err.textContent = '账号至少 2 个字符'; return; }
+  if(!pass){ err.textContent = '请输入密码'; return; }
+  const accs = readAccounts();
+  if(authMode === 'register'){
+    if(pass.length < 4){ err.textContent = '密码至少 4 位'; return; }
+    if(pass !== pass2){ err.textContent = '两次输入的密码不一致'; return; }
+    if(accs[user]){ err.textContent = '该账号已存在，请直接登录'; return; }
+    accs[user] = { pass, createdAt: Date.now() };
+    writeAccounts(accs);
+    toast('注册成功，已为你创建独立数据空间');
+    enterApp(user);
+  } else {
+    if(!accs[user]){ err.textContent = '账号不存在，可点下方「立即注册」'; return; }
+    if(accs[user].pass !== pass){ err.textContent = '密码不正确'; return; }
+    enterApp(user);
+  }
+}
+
+function enterApp(user){
+  S = { user, students:[], goods:[], exams:[], activeExam:null, createdAt: Date.now() };
+  loadData();
+  $('#loginView').classList.add('hidden');
+  $('#appView').classList.remove('hidden');
+  $('#curUser').textContent = user;
+  $('#loginUser').value = ''; $('#loginPass').value = ''; $('#loginPass2').value = '';
+  buildGroupSelects();
+  renderAll();
+  switchTab('students');
+}
+
+function logout(){
+  saveData();
+  S = { user:null, students:[], goods:[], exams:[], activeExam:null, createdAt:0 };
+  $('#appView').classList.add('hidden');
+  $('#loginView').classList.remove('hidden');
+  setAuthMode('login');
+  toast('已退出登录，数据已保存在本机');
+}
+
+/* ================= 数据读写 ================= */
+function loadData(){
+  let raw = null;
+  try { raw = JSON.parse(localStorage.getItem(DATA_KEY(S.user)) || 'null'); } catch(e){ raw = null; }
+  if(raw && typeof raw === 'object'){
+    S.students = Array.isArray(raw.students) ? raw.students : [];
+    S.goods = Array.isArray(raw.goods) ? raw.goods : [];
+    S.exams = Array.isArray(raw.exams) ? raw.exams : [];
+    S.activeExam = raw.activeExam || null;
+    S.createdAt = raw.createdAt || Date.now();
+  } else {
+    S.students = []; S.goods = []; S.exams = []; S.activeExam = null; S.createdAt = Date.now();
+  }
+  // 兼容旧数据
+  S.students.forEach(st => {
+    if(!st.id) st.id = uid();
+    if(typeof st.score !== 'number') st.score = 0;
+    st.logs = Array.isArray(st.logs) ? st.logs : [];
+    if(!st.createdAt) st.createdAt = Date.now();
+  });
+}
+
+function saveData(){
+  if(!S.user) return;
+  try {
+    localStorage.setItem(DATA_KEY(S.user), JSON.stringify({
+      students: S.students, goods: S.goods, exams: S.exams,
+      activeExam: S.activeExam, createdAt: S.createdAt, savedAt: Date.now()
+    }));
+  } catch(e){
+    toast('保存失败：浏览器存储空间不足或被限制');
+  }
+}
+
+function buildGroupSelects(){
+  const inG = $('#inGroup'), edG = $('#editGroup');
+  [inG, edG].forEach(sel => {
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">未分组</option>' + GROUPS.map(g => `<option value="${g}">${g}</option>`).join('');
+    if(cur) sel.value = cur;
+  });
+}
+
+/* ================= 计算 ================= */
+function lastActive(st){
+  let t = st.createdAt || 0;
+  (st.logs || []).forEach(l => { if(l.ts > t) t = l.ts; });
+  return t;
+}
+function studentListSorted(){
+  let arr = S.students.slice();
+  const kw = ui.searchStu.trim();
+  if(kw){
+    arr = arr.filter(st => st.name.indexOf(kw) >= 0 || (st.group || '').indexOf(kw) >= 0 || (st.duty || '').indexOf(kw) >= 0);
+  }
+  if(ui.sortStu === 'desc') arr.sort((a,b) => b.score - a.score || a.name.localeCompare(b.name, 'zh'));
+  else if(ui.sortStu === 'asc') arr.sort((a,b) => a.score - b.score || a.name.localeCompare(b.name, 'zh'));
+  else arr.sort((a,b) => lastActive(b) - lastActive(a));
+  return arr;
+}
+function rankMap(){
+  const sorted = S.students.slice().sort((a,b) => b.score - a.score);
+  const m = {};
+  sorted.forEach((st, i) => { m[st.id] = i + 1; });
+  return m;
+}
+function groupStats(){
+  return GROUPS.map((g, i) => {
+    const members = S.students.filter(st => st.group === g);
+    const total = members.reduce((s, st) => s + st.score, 0);
+    const lastT = members.reduce((t, st) => Math.max(t, lastActive(st)), 0);
+    return {
+      name: g, order: i, count: members.length, total,
+      avg: members.length ? total / members.length : 0,
+      lastT, members
+    };
+  });
+}
+function totalLogCount(){ return S.students.reduce((n, st) => n + (st.logs || []).length, 0); }
+
+/* ================= 渲染：顶栏统计 ================= */
+function renderStats(){
+  $('#statStu').textContent = S.students.length;
+  $('#statLog').textContent = totalLogCount();
+}
+
+/* ================= 渲染：学生榜 ================= */
+function avatarClass(group){
+  if(!group) return '';
+  const i = GROUPS.indexOf(group);
+  return i >= 0 ? ' g' + ((i % 9) + 1) : '';
+}
+function renderStudents(){
+  const tbody = $('#tbodyStu'), empty = $('#emptyStu');
+  const list = studentListSorted();
+  const ranks = rankMap();
+  if(S.students.length === 0){
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = list.length ? 'none' : 'block';
+  if(!list.length){
+    empty.querySelector('p').textContent = '没有匹配的学生';
+    empty.querySelector('.sub').textContent = '换个关键词，或清空搜索框';
+  } else {
+    empty.querySelector('p').textContent = '还没有学生';
+    empty.querySelector('.sub').textContent = '先在左侧「新增学生」添加，或批量导入花名册';
+  }
+  tbody.innerHTML = list.map(st => `
+    <tr>
+      <td class="row-idx">${ranks[st.id] || '-'}</td>
+      <td>
+        <div class="name-cell">
+          <div class="avatar${avatarClass(st.group)}">${esc((st.name || '?').slice(0,1))}</div>
+          <span title="${esc(st.name)}">${esc(st.name)}</span>
+        </div>
+      </td>
+      <td>${st.group ? `<span class="tag-group">${esc(st.group)}</span>` : '<span class="muted">未分组</span>'}</td>
+      <td>${st.duty ? esc(st.duty) : '<span class="muted">—</span>'}</td>
+      <td><span class="score-num">${num(st.score)}</span></td>
+      <td>
+        <div class="acts">
+          <button class="act plus" data-act="plus" data-id="${st.id}">加分</button>
+          <button class="act minus" data-act="minus" data-id="${st.id}">减分</button>
+          <button class="act plain" data-act="hist" data-id="${st.id}">历史</button>
+          <button class="act plain" data-act="edit" data-id="${st.id}">编辑</button>
+          <button class="act del" data-act="del" data-id="${st.id}">删除</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+/* ================= 渲染：小组榜 ================= */
+function renderGroups(){
+  let list = groupStats();
+  const kw = ui.searchGrp.trim();
+  if(kw) list = list.filter(g => g.name.indexOf(kw) >= 0);
+  if(ui.sortGrp === 'desc') list.sort((a,b) => b.total - a.total || a.order - b.order);
+  else if(ui.sortGrp === 'asc') list.sort((a,b) => a.total - b.total || a.order - b.order);
+  else list.sort((a,b) => b.lastT - a.lastT || a.order - b.order);
+  const ranks = {};
+  groupStats().slice().sort((a,b) => b.total - a.total).forEach((g, i) => { ranks[g.name] = i + 1; });
+  $('#tbodyGrp').innerHTML = list.map(g => `
+    <tr>
+      <td class="row-idx">${ranks[g.name] || '-'}</td>
+      <td><div class="name-cell"><span class="tag-group">${esc(g.name)}</span></div></td>
+      <td>${g.count} 人</td>
+      <td><span class="score-num">${num(g.total)}</span></td>
+      <td><span class="avg">${g.count ? Number(g.avg).toFixed(1) : '0.0'}</span></td>
+    </tr>`).join('');
+}
+
+/* ================= 渲染：积分排座 ================= */
+function renderSeats(){
+  const kw = ui.searchSeat.trim();
+  let list = S.students.slice().sort((a,b) => b.score - a.score || a.name.localeCompare(b.name, 'zh'));
+  if(kw) list = list.filter(st => st.name.indexOf(kw) >= 0 || (st.group || '').indexOf(kw) >= 0);
+  const grid = $('#seatGrid'), empty = $('#emptySeat');
+  if(list.length === 0){
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = list.map((st, i) => `
+    <div class="seat ${i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : ''}">
+      <div class="n">${i + 1} 号座位 · ${st.group ? esc(st.group) : '未分组'}</div>
+      <div class="nm" title="${esc(st.name)}">${esc(st.name)}</div>
+      <div class="sc">${num(st.score)} 分</div>
+    </div>`).join('');
+}
+
+/* ================= Tab 切换 ================= */
+function switchTab(tab){
+  ui.tab = tab;
+  $$('#tabs .tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  ['students','groups','seats','shop','records','exam'].forEach(k => {
+    const p = $('#panel-' + k);
+    if(p) p.classList.toggle('hidden', k !== tab);
+  });
+  if(tab === 'groups') renderGroups();
+  if(tab === 'seats') renderSeats();
+  if(tab === 'shop') renderShop();
+  if(tab === 'records') { ui.recPage = 1; renderRecords(); }
+  if(tab === 'exam') renderExam();
+}
+
+function renderAll(){
+  renderStats();
+  renderStudents();
+  renderGroups();
+  renderSeats();
+  renderShop();
+  renderRecords();
+  renderExam();
+}
+/* ================= 单个加减分 ================= */
+let scoreCtx = { sid:null, op:'add' };
+function openScore(sid, op){
+  const st = S.students.find(x => x.id === sid);
+  if(!st) return;
+  scoreCtx = { sid, op };
+  $('#scoreStuName').textContent = st.name + (st.group ? ' · ' + st.group : '') + '（当前 ' + num(st.score) + ' 分）';
+  $('#scoreInput').value = '';
+  $('#scoreRemark').value = '';
+  $('#scoreErr').textContent = '';
+  $$('#quickGrid .quick').forEach(b => b.classList.remove('on'));
+  setScoreOp(op);
+  openModal('scoreModalBack');
+}
+function setScoreOp(op){
+  scoreCtx.op = op;
+  $('#opAdd').classList.toggle('on', op === 'add');
+  $('#opSub').classList.toggle('on', op === 'sub');
+  $('#scoreModalTitle').textContent = op === 'add' ? '加分操作' : '减分操作';
+}
+function submitScore(){
+  const st = S.students.find(x => x.id === scoreCtx.sid);
+  const err = $('#scoreErr');
+  err.textContent = '';
+  if(!st){ err.textContent = '学生不存在'; return; }
+  const v = Number($('#scoreInput').value);
+  if(!isFinite(v) || v <= 0){ err.textContent = '请输入大于 0 的分数'; return; }
+  const reason = $('#scoreRemark').value.trim();
+  if(!reason){ err.textContent = '备注原因必填，请简单写明加减分理由'; return; }
+  const delta = scoreCtx.op === 'add' ? v : -v;
+  st.score = Math.round((st.score + delta) * 100) / 100;
+  st.logs.push({ id: uid(), ts: Date.now(), delta, reason });
+  saveData();
+  closeModal('scoreModalBack');
+  renderAll();
+  toast((scoreCtx.op === 'add' ? '已加分 ' : '已减分 ') + v + ' 分 · ' + st.name);
+}
+
+/* ================= 批量加减 ================= */
+let batchCtx = { op:'add', target:'stu', selected:new Set() };
+function openBatch(target){
+  batchCtx = { op:'add', target: target || 'stu', selected:new Set() };
+  $('#batchReason').value = '';
+  $('#batchScore').value = '10';
+  $('#batchErr').textContent = '';
+  $('#batchAdd').classList.add('on'); $('#batchSub').classList.remove('on');
+  $('#targetStu').classList.toggle('on', batchCtx.target === 'stu');
+  $('#targetGrp').classList.toggle('on', batchCtx.target === 'grp');
+  renderBatchList();
+  openModal('batchModalBack');
+}
+function renderBatchList(){
+  const box = $('#batchList');
+  if(batchCtx.target === 'stu'){
+    if(S.students.length === 0){
+      box.innerHTML = '<div style="padding:26px;text-align:center;color:#9aa2b6;font-size:13px">还没有学生，请先在左侧添加</div>';
+    } else {
+      const list = S.students.slice().sort((a,b) => b.score - a.score);
+      box.innerHTML = list.map(st => `
+        <div class="batch-item" data-sid="${st.id}">
+          <div class="chk ${batchCtx.selected.has(st.id) ? 'on' : ''}"></div>
+          <div class="bi-name">${esc(st.name)}<span style="color:#9aa2b6;font-size:12px;margin-left:6px">${st.group ? esc(st.group) : '未分组'}</span></div>
+          <div class="bi-sc">${num(st.score)} 分</div>
+        </div>`).join('');
+    }
+  } else {
+    const gs = groupStats();
+    const hasMember = gs.some(g => g.count > 0);
+    box.innerHTML = gs.map(g => {
+      const allOn = g.members.length > 0 && g.members.every(m => batchCtx.selected.has(m.id));
+      return `<div class="batch-item" data-grp="${esc(g.name)}" style="${g.count ? '' : 'opacity:.5'}">
+        <div class="chk ${allOn ? 'on' : ''}"></div>
+        <div class="bi-name">${esc(g.name)}<span style="color:#9aa2b6;font-size:12px;margin-left:6px">${g.count} 人</span></div>
+        <div class="bi-sc">${num(g.total)} 分</div>
+      </div>`;
+    }).join('') + (hasMember ? '' : '<div style="padding:10px 14px;color:#9aa2b6;font-size:12px">各组暂无学生，请先给学生选择小组</div>');
+  }
+  $('#batchCount').textContent = batchCtx.selected.size;
+}
+function submitBatch(){
+  const err = $('#batchErr');
+  err.textContent = '';
+  if(batchCtx.selected.size === 0){ err.textContent = '请至少勾选一名学生'; return; }
+  const v = Number($('#batchScore').value);
+  if(!isFinite(v) || v <= 0){ err.textContent = '请输入大于 0 的分数'; return; }
+  const delta = batchCtx.op === 'add' ? v : -v;
+  let reason = $('#batchReason').value.trim();
+  if(!reason) reason = '批量' + (batchCtx.op === 'add' ? '加分' : '减分');
+  const now = Date.now();
+  let n = 0;
+  S.students.forEach(st => {
+    if(!batchCtx.selected.has(st.id)) return;
+    st.score = Math.round((st.score + delta) * 100) / 100;
+    st.logs.push({ id: uid(), ts: now, delta, reason });
+    n++;
+  });
+  saveData();
+  closeModal('batchModalBack');
+  renderAll();
+  toast('批量' + (batchCtx.op === 'add' ? '加分' : '减分') + '已完成，共 ' + n + ' 人');
+}
+
+/* ================= 历史 / 编辑 / 删除 ================= */
+function openHistory(sid){
+  const st = S.students.find(x => x.id === sid);
+  if(!st) return;
+  $('#histTitle').textContent = st.name + ' · 积分历史（共 ' + st.logs.length + ' 条）';
+  const box = $('#histList');
+  if(st.logs.length === 0){
+    box.innerHTML = '<div style="padding:34px;text-align:center;color:#9aa2b6;font-size:13px">暂无积分记录</div>';
+  } else {
+    const logs = st.logs.slice().sort((a,b) => b.ts - a.ts);
+    box.innerHTML = logs.map(l => `
+      <div class="hist-item">
+        <div>
+          <div class="h-time">${fmtTime(l.ts)}</div>
+          <div class="h-reason">${esc(l.reason || '未填写原因')}</div>
+        </div>
+        <div class="h-num ${l.delta > 0 ? 'up' : 'down'}">${l.delta > 0 ? '+' : ''}${num(l.delta)}</div>
+      </div>`).join('');
+  }
+  openModal('histModalBack');
+}
+
+let editCtx = { sid:null };
+function openEdit(sid){
+  const st = S.students.find(x => x.id === sid);
+  if(!st) return;
+  editCtx.sid = sid;
+  $('#editName').value = st.name;
+  $('#editGroup').value = st.group || '';
+  $('#editGender').value = st.gender || '';
+  $('#editDuty').value = st.duty || '';
+  $('#editScore').value = st.score;
+  $('#editErr').textContent = '';
+  openModal('editModalBack');
+}
+function saveEdit(){
+  const st = S.students.find(x => x.id === editCtx.sid);
+  const err = $('#editErr');
+  err.textContent = '';
+  if(!st) return;
+  const name = $('#editName').value.trim();
+  if(!name){ err.textContent = '姓名不能为空'; return; }
+  const newScore = Number($('#editScore').value);
+  if(!isFinite(newScore)){ err.textContent = '积分需为数字'; return; }
+  const diff = Math.round((newScore - st.score) * 100) / 100;
+  st.name = name;
+  st.group = $('#editGroup').value;
+  st.gender = $('#editGender').value;
+  st.duty = $('#editDuty').value.trim();
+  if(diff !== 0){
+    st.score = newScore;
+    st.logs.push({ id: uid(), ts: Date.now(), delta: diff, reason: '手动调整积分' });
+  }
+  saveData();
+  closeModal('editModalBack');
+  renderAll();
+  toast('学生信息已更新');
+}
+function deleteStudent(sid){
+  const st = S.students.find(x => x.id === sid);
+  if(!st) return;
+  confirmAction('删除学生', '确定将「' + st.name + '」从名单中删除吗？该生的积分与历史记录会一并移除。', () => {
+    S.students = S.students.filter(x => x.id !== sid);
+    saveData();
+    renderAll();
+    toast('已删除 ' + st.name);
+  });
+}
+
+/* ================= 添加学生 ================= */
+function addStudent(){
+  const name = $('#inName').value.trim();
+  if(!name){ toast('请先填写学生姓名'); $('#inName').focus(); return; }
+  if(S.students.some(x => x.name === name)){
+    confirmAction('姓名重复', '名单中已有「' + name + '」，仍要再添加一位同名学生吗？', () => doAddStudent(name));
+    return;
+  }
+  doAddStudent(name);
+}
+function doAddStudent(name){
+  S.students.push({
+    id: uid(), name,
+    group: $('#inGroup').value,
+    gender: $('#inGender').value,
+    duty: $('#inDuty').value.trim(),
+    score: 0, createdAt: Date.now(), logs: []
+  });
+  saveData();
+  $('#inName').value = ''; $('#inDuty').value = '';
+  renderAll();
+  switchTab('students');
+  toast('已添加 ' + name);
+}
+
+/* ================= 积分商城 ================= */
+let redeemCtx = { gid:null, target:'stu' };
+function renderShop(){
+  const kw = ui.searchShop.trim();
+  let list = S.goods.slice();
+  if(kw) list = list.filter(g => g.name.indexOf(kw) >= 0);
+  const grid = $('#shopGrid'), empty = $('#emptyShop');
+  if(list.length === 0){
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    renderRedeemLog();
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = list.map(g => `
+    <div class="goods">
+      <div class="g-name">${esc(g.name)}</div>
+      <div class="g-meta"><span class="g-cost">${g.cost} 积分</span><span>库存 ${g.stock}</span></div>
+      <button class="btn-redeem" data-gid="${g.id}" ${g.stock <= 0 ? 'disabled style="opacity:.5;cursor:not-allowed"' : ''}>${g.stock <= 0 ? '已兑完' : '兑换'}</button>
+    </div>`).join('');
+  renderRedeemLog();
+}
+function renderRedeemLog(){
+  const tb = $('#tbodyRedeemLog'), empty = $('#emptyRedeem');
+  if(!tb) return;
+  const rows = [];
+  S.students.forEach(st => (st.logs || []).forEach(l => {
+    if((l.reason || '').indexOf('兑换') < 0) return;
+    rows.push({ ts: l.ts, name: st.name, group: st.group || '', prize: (l.reason || '').replace(/^(小组)?兑换奖品：/, ''), delta: l.delta });
+  }));
+  rows.sort((a,b) => b.ts - a.ts);
+  if(rows.length === 0){
+    tb.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  tb.innerHTML = rows.slice(0, 20).map(r => `
+    <tr>
+      <td style="color:#7b8298;font-size:13px">${fmtTime(r.ts)}</td>
+      <td>${esc(r.name)}</td>
+      <td style="color:#4d556e">${esc(r.prize)}</td>
+      <td><span class="delta-down" style="font-weight:600">${num(r.delta)} 分</span></td>
+      <td>${r.group ? `<span class="tag-group">${esc(r.group)}</span>` : '<span class="muted">—</span>'}</td>
+    </tr>`).join('');
+}
+function openGoods(){
+  $('#gName').value = ''; $('#gCost').value = '50'; $('#gStock').value = '10';
+  $('#gErr').textContent = '';
+  openModal('goodsModalBack');
+}
+function saveGoods(){
+  const name = $('#gName').value.trim();
+  const cost = Number($('#gCost').value);
+  const stock = Number($('#gStock').value);
+  const err = $('#gErr');
+  err.textContent = '';
+  if(!name){ err.textContent = '请填写奖品名称'; return; }
+  if(!isFinite(cost) || cost <= 0){ err.textContent = '所需积分需大于 0'; return; }
+  if(!isFinite(stock) || stock < 0){ err.textContent = '库存不能为负数'; return; }
+  S.goods.push({ id: uid(), name, cost: Math.round(cost), stock: Math.round(stock), createdAt: Date.now() });
+  saveData();
+  closeModal('goodsModalBack');
+  renderShop();
+  toast('已添加奖品：' + name);
+}
+function openRedeem(gid){
+  const g = S.goods.find(x => x.id === gid);
+  if(!g) return;
+  redeemCtx = { gid, target:'stu' };
+  $('#redeemGoodsName').textContent = g.name + '（' + g.cost + ' 积分 · 库存 ' + g.stock + '）';
+  $('#redeemByStu').classList.add('on');
+  $('#redeemByGrp').classList.remove('on');
+  $('#redeemErr').textContent = '';
+  fillRedeemTargets();
+  openModal('redeemModalBack');
+}
+function fillRedeemTargets(){
+  const sel = $('#redeemTarget');
+  const g = S.goods.find(x => x.id === redeemCtx.gid);
+  if(!g) return;
+  if(redeemCtx.target === 'stu'){
+    $('#redeemPickLabel').textContent = '选择学生';
+    const opts = S.students.slice().sort((a,b) => b.score - a.score)
+      .map(st => `<option value="${st.id}">${esc(st.name)}（${num(st.score)} 分）${st.group ? ' · ' + esc(st.group) : ''}</option>`).join('');
+    sel.innerHTML = opts || '<option value="">暂无学生</option>';
+    const st = S.students.find(x => x.id === sel.value);
+    $('#redeemHint').textContent = st
+      ? (st.score >= g.cost ? '兑换后剩余 ' + num(st.score - g.cost) + ' 分' : '该生积分不足，还差 ' + num(g.cost - st.score) + ' 分')
+      : '请选择学生';
+  } else {
+    $('#redeemPickLabel').textContent = '选择小组';
+    const gs = groupStats();
+    sel.innerHTML = gs.map(x => `<option value="${esc(x.name)}">${esc(x.name)}（${x.count} 人 · 组内合计 ${num(x.total)} 分）</option>`).join('');
+    const gname = sel.value;
+    const gsItem = gs.find(x => x.name === gname);
+    if(gsItem && gsItem.count){
+      const need = g.cost;
+      const okCount = gsItem.members.filter(m => m.score >= need).length;
+      $('#redeemHint').textContent = '按小组兑换时，组内每位学生各扣 ' + need + ' 分；当前可足额兑换 ' + okCount + '/' + gsItem.count + ' 人';
+    } else {
+      $('#redeemHint').textContent = '该小组暂无成员';
+    }
+  }
+}
+function doRedeem(){
+  const g = S.goods.find(x => x.id === redeemCtx.gid);
+  const err = $('#redeemErr');
+  err.textContent = '';
+  if(!g){ err.textContent = '奖品不存在'; return; }
+  if(g.stock <= 0){ err.textContent = '库存已兑完'; return; }
+  const target = $('#redeemTarget').value;
+  const now = Date.now();
+  if(redeemCtx.target === 'stu'){
+    const st = S.students.find(x => x.id === target);
+    if(!st){ err.textContent = '请选择学生'; return; }
+    if(st.score < g.cost){ err.textContent = '「' + st.name + '」积分不足，无法兑换'; return; }
+    st.score = Math.round((st.score - g.cost) * 100) / 100;
+    st.logs.push({ id: uid(), ts: now, delta: -g.cost, reason: '兑换奖品：' + g.name });
+    g.stock -= 1;
+    saveData();
+    closeModal('redeemModalBack');
+    renderAll();
+    toast(st.name + ' 兑换成功：' + g.name);
+  } else {
+    const gsItem = groupStats().find(x => x.name === target);
+    if(!gsItem || !gsItem.count){ err.textContent = '该小组暂无成员'; return; }
+    if(g.stock < gsItem.count){ err.textContent = '库存不足，需 ' + gsItem.count + ' 件，当前仅 ' + g.stock + ' 件'; return; }
+    const insufficient = gsItem.members.filter(m => m.score < g.cost);
+    if(insufficient.length){ err.textContent = '以下学生积分不足：' + insufficient.map(m => m.name).join('、'); return; }
+    gsItem.members.forEach(m => {
+      m.score = Math.round((m.score - g.cost) * 100) / 100;
+      m.logs.push({ id: uid(), ts: now, delta: -g.cost, reason: '小组兑换奖品：' + g.name });
+    });
+    g.stock -= gsItem.count;
+    saveData();
+    closeModal('redeemModalBack');
+    renderAll();
+    toast(target + ' 全员兑换成功：' + g.name);
+  }
+}
+
+/* ================= 积分记录 ================= */
+function allRecords(){
+  const arr = [];
+  S.students.forEach(st => (st.logs || []).forEach(l => {
+    arr.push({ sid: st.id, id: l.id, name: st.name, group: st.group || '', ts: l.ts, delta: l.delta, reason: l.reason });
+  }));
+  arr.sort((a,b) => b.ts - a.ts);
+  return arr;
+}
+function startOfWeek(ts){
+  const d = new Date(ts);
+  const day = d.getDay() === 0 ? 7 : d.getDay();
+  const base = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  base.setTime(base.getTime() - (day - 1) * 86400000);
+  return base.getTime();
+}
+function filteredRecords(){
+  let arr = allRecords();
+  const kw = ui.searchRec.trim();
+  if(kw) arr = arr.filter(r => r.name.indexOf(kw) >= 0 || r.group.indexOf(kw) >= 0 || (r.reason || '').indexOf(kw) >= 0);
+  if(ui.recRange === 'week'){
+    const start = startOfWeek(Date.now());
+    arr = arr.filter(r => r.ts >= start);
+  } else if(ui.recRange === 'month'){
+    const d = new Date(); const start = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+    arr = arr.filter(r => r.ts >= start);
+  } else if(ui.recRange === 'custom'){
+    const sv = $('#recStart').value, ev = $('#recEnd').value;
+    const s = sv ? new Date(sv + ' 00:00:00').getTime() : -Infinity;
+    const e = ev ? new Date(ev + ' 23:59:59').getTime() : Infinity;
+    arr = arr.filter(r => r.ts >= s && r.ts <= e);
+  }
+  return arr;
+}
+function renderRecords(){
+  const arr = filteredRecords();
+  const tbody = $('#tbodyRec'), empty = $('#emptyRec');
+  const sum = arr.reduce((s, r) => s + r.delta, 0);
+  $('#recSummary').innerHTML = '区间内合计 <b>' + arr.length + '</b> 条，净变动 <b>' + (sum > 0 ? '+' : '') + num(sum) + '</b> 分';
+  if(arr.length === 0){
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    $('#recPager').innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+  const size = ui.recSize;
+  const pages = Math.max(1, Math.ceil(arr.length / size));
+  if(ui.recPage > pages) ui.recPage = pages;
+  const start = (ui.recPage - 1) * size;
+  const pageArr = arr.slice(start, start + size);
+  tbody.innerHTML = pageArr.map(r => `
+    <tr>
+      <td style="color:#7b8298;font-size:13px">${fmtTime(r.ts)}</td>
+      <td><span style="font-weight:500">${esc(r.name)}</span>${r.group ? '<div style="font-size:12px;color:#9aa2b6">' + esc(r.group) + '</div>' : ''}</td>
+      <td><span class="${r.delta > 0 ? 'delta-up' : 'delta-down'}" style="font-weight:600">${r.delta > 0 ? '+' : ''}${num(r.delta)}</span></td>
+      <td style="color:#4d556e;word-break:break-all">${esc(r.reason || '—')}</td>
+      <td><button class="act del" data-rid="${r.id}" data-sid="${r.sid}">删除</button></td>
+    </tr>`).join('');
+
+  const total = pages;
+  let btns = '';
+  btns += `<button ${ui.recPage === 1 ? 'disabled' : ''} data-pg="${ui.recPage - 1}">上一页</button>`;
+  const range = [];
+  for(let i = 1; i <= total; i++){
+    if(i === 1 || i === total || Math.abs(i - ui.recPage) <= 1) range.push(i);
+  }
+  let last = 0;
+  range.forEach(i => {
+    if(i - last > 1) btns += '<span class="info">…</span>';
+    btns += `<button class="${i === ui.recPage ? 'on' : ''}" data-pg="${i}">${i}</button>`;
+    last = i;
+  });
+  btns += `<button ${ui.recPage === total ? 'disabled' : ''} data-pg="${ui.recPage + 1}">下一页</button>`;
+  btns += `<span class="info">第 ${ui.recPage} / ${total} 页，共 ${arr.length} 条</span>`;
+  $('#recPager').innerHTML = btns;
+}
+function deleteRecord(sid, rid){
+  const st = S.students.find(x => x.id === sid);
+  if(!st) return;
+  const log = st.logs.find(l => l.id === rid);
+  if(!log) return;
+  confirmAction('删除记录', '删除这条记录会同时回滚 ' + (log.delta > 0 ? '+' : '') + num(log.delta) + ' 分，确定吗？', () => {
+    st.logs = st.logs.filter(l => l.id !== rid);
+    st.score = Math.round((st.score - log.delta) * 100) / 100;
+    saveData(); renderAll();
+    toast('记录已删除并回滚积分');
+  });
+}
+
+/* ================= 成绩 ================= */
+function currentExam(){
+  if(!S.exams.length) return null;
+  return S.exams.find(e => e.id === S.activeExam) || S.exams[S.exams.length - 1];
+}
+function prevExam(cur){
+  if(!cur) return null;
+  const idx = S.exams.findIndex(e => e.id === cur.id);
+  return idx > 0 ? S.exams[idx - 1] : null;
+}
+function renderExam(){
+  const sel = $('#examSelect');
+  if(S.exams.length === 0){
+    sel.innerHTML = '<option value="">暂无考试</option>';
+  } else {
+    const cur = currentExam();
+    sel.innerHTML = S.exams.map(e => `<option value="${e.id}" ${cur && cur.id === e.id ? 'selected' : ''}>${esc(e.name)}（${fmtDay(e.createdAt)}）</option>`).join('');
+  }
+  const cur = currentExam();
+  const prev = prevExam(cur);
+  const kw = ui.searchExam.trim();
+
+  if(!cur){
+    $('#tbodyExam').innerHTML = ''; $('#emptyExam').style.display = 'block';
+    $('#tbodyExamGrp').innerHTML = '';
+    $('#tbodyTrend').innerHTML = ''; $('#emptyTrend').style.display = 'block';
+    return;
+  }
+  // 班级成绩
+  let rows = S.students.filter(st => cur.scores[st.id] != null);
+  if(kw) rows = rows.filter(st => st.name.indexOf(kw) >= 0 || (st.group || '').indexOf(kw) >= 0);
+  rows.sort((a,b) => cur.scores[b.id] - cur.scores[a.id]);
+  const ranks = {};
+  S.students.filter(st => cur.scores[st.id] != null)
+    .slice().sort((a,b) => cur.scores[b.id] - cur.scores[a.id])
+    .forEach((st, i) => { ranks[st.id] = i + 1; });
+  if(rows.length === 0){
+    $('#tbodyExam').innerHTML = ''; $('#emptyExam').style.display = 'block';
+  } else {
+    $('#emptyExam').style.display = 'none';
+    $('#tbodyExam').innerHTML = rows.map(st => {
+      const now = cur.scores[st.id];
+      const old = prev && prev.scores[st.id] != null ? prev.scores[st.id] : null;
+      const d = old == null ? null : Math.round((now - old) * 100) / 100;
+      return `<tr>
+        <td><span class="rank-badge ${ranks[st.id] === 1 ? 'rank-1' : ranks[st.id] === 2 ? 'rank-2' : ranks[st.id] === 3 ? 'rank-3' : ''}">${ranks[st.id]}</span></td>
+        <td>${esc(st.name)}</td>
+        <td>${st.group ? `<span class="tag-group">${esc(st.group)}</span>` : '<span class="muted">未分组</span>'}</td>
+        <td><span class="score-num">${num(now)}</span></td>
+        <td>${old == null ? '<span class="muted">—</span>' : num(old)}</td>
+        <td>${d == null ? '<span class="delta-flat">—</span>' : d > 0 ? `<span class="delta-up">↑ ${num(d)}</span>` : d < 0 ? `<span class="delta-down">↓ ${num(Math.abs(d))}</span>` : '<span class="delta-flat">持平</span>'}</td>
+        <td><button class="act plain" data-examscore="${st.id}">积分操作</button></td>
+      </tr>`;
+    }).join('');
+  }
+  // 小组平均分
+  const gs = GROUPS.map(g => {
+    const members = S.students.filter(st => st.group === g && cur.scores[st.id] != null);
+    const total = members.reduce((s, st) => s + cur.scores[st.id], 0);
+    return { name: g, count: members.length, total, avg: members.length ? total / members.length : 0 };
+  }).sort((a,b) => b.avg - a.avg);
+  $('#tbodyExamGrp').innerHTML = gs.map((g, i) => `
+    <tr>
+      <td class="row-idx">${i + 1}</td>
+      <td><span class="tag-group">${esc(g.name)}</span></td>
+      <td>${g.count} 人</td>
+      <td>${num(g.total)}</td>
+      <td><span class="avg">${g.count ? Number(g.avg).toFixed(1) : '0.0'}</span></td>
+    </tr>`).join('');
+
+  // 进退步榜
+  if(!prev){
+    $('#tbodyTrend').innerHTML = ''; $('#emptyTrend').style.display = 'block';
+  } else {
+    const items = [];
+    S.students.forEach(st => {
+      const now = cur.scores[st.id], old = prev.scores[st.id];
+      if(now == null || old == null) return;
+      const d = Math.round((now - old) * 100) / 100;
+      if(d !== 0) items.push({ st, d });
+    });
+    if(items.length === 0){
+      $('#tbodyTrend').innerHTML = ''; $('#emptyTrend').style.display = 'block';
+    } else {
+      items.sort((a,b) => Math.abs(b.d) - Math.abs(a.d));
+      $('#emptyTrend').style.display = 'none';
+      $('#tbodyTrend').innerHTML = items.map(({ st, d }) => `
+        <tr>
+          <td>${d > 0 ? '<span class="delta-up" style="font-weight:600">进步</span>' : '<span class="delta-down" style="font-weight:600">退步</span>'}</td>
+          <td>${esc(st.name)}</td>
+          <td>${st.group ? `<span class="tag-group">${esc(st.group)}</span>` : '<span class="muted">未分组</span>'}</td>
+          <td><span class="${d > 0 ? 'delta-up' : 'delta-down'}">${d > 0 ? '+' : ''}${num(d)}</span></td>
+          <td>
+            <button class="act plus" data-quick="plus" data-id="${st.id}">进步+2</button>
+            <button class="act minus" data-quick="minus" data-id="${st.id}">退步−2</button>
+          </td>
+        </tr>`).join('');
+    }
+  }
+}
+function openExamModal(){
+  $('#examName').value = '';
+  $('#examData').value = '';
+  $('#examErr').textContent = '';
+  openModal('examModalBack');
+}
+function saveExam(){
+  const name = $('#examName').value.trim() || ('考试成绩' + fmtDay(Date.now()));
+  const raw = $('#examData').value.trim();
+  const err = $('#examErr');
+  err.textContent = '';
+  if(!raw){ err.textContent = '请粘贴成绩数据'; return; }
+  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const scores = {};
+  let matched = 0, miss = [];
+  lines.forEach(line => {
+    const parts = line.split(/[\t,， ]+/).filter(Boolean);
+    if(parts.length < 2) return;
+    const sname = parts[0].replace(/["']/g, '');
+    const val = Number(parts[parts.length - 1]);
+    if(!isFinite(val)) return;
+    const st = S.students.find(x => x.name === sname);
+    if(st){ scores[st.id] = val; matched++; }
+    else miss.push(sname);
+  });
+  if(matched === 0){ err.textContent = '没有匹配到任何学生姓名，请检查名单与粘贴内容'; return; }
+  const exam = { id: uid(), name, createdAt: Date.now(), scores };
+  S.exams.push(exam);
+  S.activeExam = exam.id;
+  saveData();
+  closeModal('examModalBack');
+  renderExam(); renderAll();
+  toast('已导入「' + name + '」，匹配 ' + matched + ' 名学生' + (miss.length ? '；未匹配：' + miss.slice(0,5).join('、') : ''));
+}
+function deleteExam(){
+  const cur = currentExam();
+  if(!cur){ toast('当前没有可删除的考试'); return; }
+  confirmAction('删除考试', '确定删除「' + cur.name + '」这次考试的全部成绩吗？', () => {
+    S.exams = S.exams.filter(e => e.id !== cur.id);
+    S.activeExam = S.exams.length ? S.exams[S.exams.length - 1].id : null;
+    saveData();
+    renderExam(); renderAll();
+    toast('已删除该次考试');
+  });
+}
+
+/* ================= 导入 / 模板 / 导出 ================= */
+function downloadBlob(content, filename, mime){
+  const blob = new Blob([content], { type: mime || 'application/octet-stream' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1200);
+}
+function downloadTpl(){
+  const csv = '\ufeff姓名,性别,组号,职务\r\n张三,男,1,组长\r\n李四,女,2,\r\n王五,男,3,\r\n';
+  downloadBlob(csv, '学生导入模板.csv', 'text/csv;charset=utf-8');
+  toast('模板已下载，填写后保存为 CSV 再导入');
+}
+function normalizeGroup(v){
+  if(!v) return '';
+  const s = String(v).trim();
+  const m = s.match(/(\d+)/);
+  if(!m) {
+    const idx = GROUPS.indexOf(s);
+    return idx >= 0 ? s : '';
+  }
+  const n = parseInt(m[1], 10);
+  return n >= 1 && n <= 9 ? '第' + n + '组' : '';
+}
+function importCSVText(text){
+  const lines = text.replace(/^\ufeff/, '').split(/\r?\n/).filter(l => l.trim().length);
+  if(lines.length === 0){ toast('文件内容为空'); return; }
+  // 分隔符判断
+  const delim = lines[0].indexOf('\t') >= 0 ? '\t' : ',';
+  let startIdx = 0;
+  const head = lines[0].split(delim).map(s => s.trim());
+  if(head.some(h => /姓名|名字|name/i.test(h)) || head.length >= 2 && /性别|组|职务/.test(lines[0])) startIdx = 1;
+  let added = 0, updated = 0;
+  lines.slice(startIdx).forEach(line => {
+    const cells = line.split(delim).map(c => c.replace(/^"|"$/g, '').replace(/""/g, '"').trim());
+    const name = cells[0];
+    if(!name) return;
+    const gender = cells[1] && /男|女/.test(cells[1]) ? (cells[1].indexOf('男') >= 0 ? '男' : '女') : '';
+    const group = normalizeGroup(cells[2] || '');
+    const duty = cells[3] || '';
+    const exist = S.students.find(x => x.name === name);
+    if(exist){
+      exist.gender = gender || exist.gender;
+      exist.group = group || exist.group;
+      exist.duty = duty || exist.duty;
+      updated++;
+    } else {
+      S.students.push({ id: uid(), name, gender, group, duty, score: 0, createdAt: Date.now(), logs: [] });
+      added++;
+    }
+  });
+  saveData(); renderAll(); switchTab('students');
+  toast('导入完成：新增 ' + added + ' 人，更新 ' + updated + ' 人');
+}
+function exportXls(){
+  const ranks = rankMap();
+  const stuRows = S.students.slice().sort((a,b) => b.score - a.score || a.name.localeCompare(b.name, 'zh'));
+  const gs = groupStats().slice().sort((a,b) => b.total - a.total);
+  const recs = allRecords();
+  const th = t => `<td style="background:#eef3fc;font-weight:bold;border:1px solid #c9d6ea;text-align:center;white-space:nowrap">${t}</td>`;
+  const td = (v, align) => `<td style="border:1px solid #d8e0ec;${align ? 'text-align:' + align + ';' : ''}mso-number-format:"\@"">${esc(v)}</td>`;
+  const title = t => `<tr><td colspan="5" style="font-size:15pt;font-weight:bold;padding:6px 0 8px">${t}</td></tr>`;
+  const blank = `<tr><td colspan="5">&nbsp;</td></tr>`;
+
+  let body = title('班级积分表　导出时间：' + fmtTime(Date.now()));
+  body += `<tr>${['排名','姓名','班级小组','班级职务','积分'].map(th).join('')}</tr>`;
+  body += stuRows.length
+    ? stuRows.map(st => `<tr>${td(ranks[st.id] || '','center')}${td(st.name)}${td(st.group || '未分组')}${td(st.duty || '')}${td(num(st.score),'right')}</tr>`).join('')
+    : `<tr><td colspan="5" style="border:1px solid #d8e0ec;text-align:center">暂无学生</td></tr>`;
+
+  body += blank + title('一、小组榜');
+  body += `<tr>${['排名','小组','总人数','总积分','人均积分'].map(th).join('')}</tr>`;
+  body += gs.map((g, i) => `<tr>${td(i + 1,'center')}${td(g.name)}${td(g.count + ' 人','center')}${td(num(g.total),'right')}${td(g.count ? Number(g.avg).toFixed(1) : '0.0', 'right')}</tr>`).join('');
+
+  body += blank + title('二、积分记录（共 ' + recs.length + ' 条）');
+  body += `<tr>${['时间','学生','班级小组','分数变动','变动原因'].map(th).join('')}</tr>`;
+  body += recs.length
+    ? recs.map(r => `<tr>${td(fmtTime(r.ts))}${td(r.name)}${td(r.group || '未分组')}${td((r.delta > 0 ? '+' : '') + num(r.delta), 'right')}${td(r.reason || '')}</tr>`).join('')
+    : `<tr><td colspan="5" style="border:1px solid #d8e0ec;text-align:center">暂无记录</td></tr>`;
+
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8">
+<style>table{border-collapse:collapse} td{font-family:"Microsoft YaHei","PingFang SC",sans-serif;font-size:11pt} col{width:120pt}</style>
+</head><body>
+<table border="1" cellspacing="0">
+<colgroup><col style="width:60px"><col style="width:110px"><col style="width:100px"><col style="width:110px"><col style="width:90px"></colgroup>
+${body}
+</table>
+</body></html>`;
+
+  downloadBlob('\ufeff' + html, '班级积分表_' + fmtDay(Date.now()) + '.xls', 'application/vnd.ms-excel;charset=utf-8');
+  toast('已导出表格文件，可用 WPS / Excel 打开');
+}
+function exportRecords(){
+  const recs = filteredRecords();
+  if(recs.length === 0){ toast('当前筛选下没有记录'); return; }
+  const th = t => `<th style="background:#eef3fc;font-weight:bold;border:1px solid #c9d6ea">${t}</th>`;
+  const td = (v, a) => `<td style="border:1px solid #d8e0ec;${a ? 'text-align:' + a : ''}">${esc(v)}</td>`;
+  const html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>
+<table border="1" cellspacing="0"><tr>${['时间','学生','班级小组','分数变动','变动原因'].map(th).join('')}</tr>
+${recs.map(r => `<tr>${td(fmtTime(r.ts))}${td(r.name)}${td(r.group || '未分组')}${td((r.delta > 0 ? '+' : '') + num(r.delta), 'right')}${td(r.reason || '')}</tr>`).join('')}
+</table></body></html>`;
+  downloadBlob('\ufeff' + html, '积分记录_' + fmtDay(Date.now()) + '.xls', 'application/vnd.ms-excel;charset=utf-8');
+  toast('积分记录已导出');
+}
+
+/* ================= 事件绑定 ================= */
+function bindEvents(){
+  // 登录
+  $('#loginBtn').addEventListener('click', doAuth);
+  $('#loginSwitch').addEventListener('click', () => setAuthMode(authMode === 'login' ? 'register' : 'login'));
+  ['loginUser','loginPass','loginPass2'].forEach(id => {
+    $('#' + id).addEventListener('keydown', e => { if(e.key === 'Enter') doAuth(); });
+  });
+  setAuthMode('login');
+
+  // 顶部按钮
+  $('#btnSync').addEventListener('click', () => { saveData(); toast('已保存到本机浏览器（当前为本地版，无云端同步）'); });
+  $('#btnExport').addEventListener('click', exportXls);
+  $('#btnExam').addEventListener('click', () => switchTab('exam'));
+  $('#btnProfile').addEventListener('click', () => {
+    $('#profUser').textContent = S.user || '—';
+    $('#profStu').textContent = S.students.length;
+    $('#profLog').textContent = totalLogCount();
+    openModal('profModalBack');
+  });
+
+  // tab
+  $('#tabs').addEventListener('click', e => {
+    const b = e.target.closest('.tab');
+    if(b) switchTab(b.dataset.tab);
+  });
+
+  // 搜索
+  $('#searchStu').addEventListener('input', e => { ui.searchStu = e.target.value; renderStudents(); });
+  $('#searchGrp').addEventListener('input', e => { ui.searchGrp = e.target.value; renderGroups(); });
+  $('#searchSeat').addEventListener('input', e => { ui.searchSeat = e.target.value; renderSeats(); });
+  $('#searchShop').addEventListener('input', e => { ui.searchShop = e.target.value; renderShop(); });
+  $('#searchRec').addEventListener('input', e => { ui.searchRec = e.target.value; ui.recPage = 1; renderRecords(); });
+  $('#searchExam').addEventListener('input', e => { ui.searchExam = e.target.value; renderExam(); });
+
+  // 排序
+  $('#sortStu').addEventListener('click', e => {
+    const b = e.target.closest('button'); if(!b) return;
+    ui.sortStu = b.dataset.sort;
+    $$('#sortStu button').forEach(x => x.classList.toggle('on', x === b));
+    renderStudents();
+  });
+  $('#sortGrp').addEventListener('click', e => {
+    const b = e.target.closest('button'); if(!b) return;
+    ui.sortGrp = b.dataset.sort;
+    $$('#sortGrp button').forEach(x => x.classList.toggle('on', x === b));
+    renderGroups();
+  });
+  $('#btnSeatRefresh').addEventListener('click', () => { renderSeats(); toast('已按最新积分重排座位'); });
+
+  // 添加学生
+  $('#btnAddStudent').addEventListener('click', addStudent);
+  $('#inName').addEventListener('keydown', e => { if(e.key === 'Enter') addStudent(); });
+
+  // 学生行操作
+  $('#tbodyStu').addEventListener('click', e => {
+    const b = e.target.closest('[data-act]'); if(!b) return;
+    const sid = b.dataset.id, act = b.dataset.act;
+    if(act === 'plus') openScore(sid, 'add');
+    if(act === 'minus') openScore(sid, 'sub');
+    if(act === 'hist') openHistory(sid);
+    if(act === 'edit') openEdit(sid);
+    if(act === 'del') deleteStudent(sid);
+  });
+
+  // 加减分弹窗
+  $('#opAdd').addEventListener('click', () => setScoreOp('add'));
+  $('#opSub').addEventListener('click', () => setScoreOp('sub'));
+  $('#quickGrid').addEventListener('click', e => {
+    const b = e.target.closest('.quick'); if(!b) return;
+    $$('#quickGrid .quick').forEach(x => x.classList.toggle('on', x === b));
+    $('#scoreInput').value = b.dataset.q;
+  });
+  $('#scoreInput').addEventListener('input', () => $$('#quickGrid .quick').forEach(x => x.classList.remove('on')));
+  $('#btnSubmitScore').addEventListener('click', submitScore);
+
+  // 批量
+  $('#btnBatchStu').addEventListener('click', () => openBatch('stu'));
+  $('#btnBatchGrp').addEventListener('click', () => openBatch('grp'));
+  $('#batchAdd').addEventListener('click', () => { batchCtx.op = 'add'; $('#batchAdd').classList.add('on'); $('#batchSub').classList.remove('on'); });
+  $('#batchSub').addEventListener('click', () => { batchCtx.op = 'sub'; $('#batchSub').classList.add('on'); $('#batchAdd').classList.remove('on'); });
+  $('#targetStu').addEventListener('click', () => { batchCtx.target = 'stu'; $('#targetStu').classList.add('on'); $('#targetGrp').classList.remove('on'); renderBatchList(); });
+  $('#targetGrp').addEventListener('click', () => { batchCtx.target = 'grp'; $('#targetGrp').classList.add('on'); $('#targetStu').classList.remove('on'); renderBatchList(); });
+  $('#batchList').addEventListener('click', e => {
+    const item = e.target.closest('.batch-item'); if(!item) return;
+    if(batchCtx.target === 'stu'){
+      const sid = item.dataset.sid;
+      if(batchCtx.selected.has(sid)) batchCtx.selected.delete(sid); else batchCtx.selected.add(sid);
+    } else {
+      const gname = item.dataset.grp;
+      const members = S.students.filter(st => st.group === gname);
+      if(members.length === 0) return;
+      const allOn = members.every(m => batchCtx.selected.has(m.id));
+      if(allOn) members.forEach(m => batchCtx.selected.delete(m.id));
+      else members.forEach(m => batchCtx.selected.add(m.id));
+    }
+    renderBatchList();
+  });
+  $('#batchAll').addEventListener('click', () => {
+    S.students.forEach(st => batchCtx.selected.add(st.id));
+    renderBatchList();
+  });
+  $('#batchNone').addEventListener('click', () => { batchCtx.selected.clear(); renderBatchList(); });
+  $('#btnBatchSubmit').addEventListener('click', submitBatch);
+
+  // 历史 / 编辑
+  $('#btnSaveEdit').addEventListener('click', saveEdit);
+  $('#editModalBack').addEventListener('click', e => { if(e.target.id === 'editModalBack') closeModal('editModalBack'); });
+
+  // 商城
+  $('#btnAddGoods').addEventListener('click', openGoods);
+  $('#btnSaveGoods').addEventListener('click', saveGoods);
+  $('#shopGrid').addEventListener('click', e => {
+    const b = e.target.closest('[data-gid]'); if(!b) return;
+    openRedeem(b.dataset.gid);
+  });
+  $('#redeemByStu').addEventListener('click', () => { redeemCtx.target = 'stu'; $('#redeemByStu').classList.add('on'); $('#redeemByGrp').classList.remove('on'); fillRedeemTargets(); });
+  $('#redeemByGrp').addEventListener('click', () => { redeemCtx.target = 'grp'; $('#redeemByGrp').classList.add('on'); $('#redeemByStu').classList.remove('on'); fillRedeemTargets(); });
+  $('#redeemTarget').addEventListener('change', fillRedeemTargets);
+  $('#btnRedeem').addEventListener('click', doRedeem);
+
+  // 记录
+  $('#recRange').addEventListener('click', e => {
+    const b = e.target.closest('button'); if(!b) return;
+    ui.recRange = b.dataset.range; ui.recPage = 1;
+    $$('#recRange button').forEach(x => x.classList.toggle('on', x === b));
+    $('#customRange').style.display = ui.recRange === 'custom' ? 'flex' : 'none';
+    renderRecords();
+  });
+  $('#recStart').addEventListener('change', () => { ui.recPage = 1; renderRecords(); });
+  $('#recEnd').addEventListener('change', () => { ui.recPage = 1; renderRecords(); });
+  $('#recPager').addEventListener('click', e => {
+    const b = e.target.closest('button[data-pg]'); if(!b || b.disabled) return;
+    ui.recPage = Number(b.dataset.pg); renderRecords();
+  });
+  $('#btnExportRec').addEventListener('click', exportRecords);
+  $('#tbodyRec').addEventListener('click', e => {
+    const b = e.target.closest('[data-rid]'); if(!b) return;
+    deleteRecord(b.dataset.sid, b.dataset.rid);
+  });
+
+  // 成绩
+  $('#btnImportExam').addEventListener('click', openExamModal);
+  $('#btnDelExam').addEventListener('click', deleteExam);
+  $('#btnSaveExam').addEventListener('click', saveExam);
+  $('#examSelect').addEventListener('change', e => { S.activeExam = e.target.value; saveData(); renderExam(); });
+  $('#tbodyExam').addEventListener('click', e => {
+    const b = e.target.closest('[data-examscore]'); if(!b) return;
+    openScore(b.dataset.examscore, 'add');
+  });
+  $('#tbodyTrend').addEventListener('click', e => {
+    const b = e.target.closest('[data-quick]'); if(!b) return;
+    const st = S.students.find(x => x.id === b.dataset.id);
+    if(!st) return;
+    const delta = b.dataset.quick === 'plus' ? 2 : -2;
+    st.score = Math.round((st.score + delta) * 100) / 100;
+    st.logs.push({ id: uid(), ts: Date.now(), delta, reason: delta > 0 ? '成绩进步奖励' : '成绩退步扣分' });
+    saveData(); renderAll();
+    toast(st.name + ' ' + (delta > 0 ? '+2' : '-2') + ' 分');
+  });
+
+  // 导入 / 模板
+  $('#btnPickFile').addEventListener('click', () => $('#fileExcel').click());
+  $('#btnTpl').addEventListener('click', downloadTpl);
+  $('#fileExcel').addEventListener('change', e => {
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const name = file.name.toLowerCase();
+    if(name.endsWith('.xls') || name.endsWith('.xlsx')){
+      toast('网页版无法直接解析 Excel，请在 Excel/WPS 中另存为 CSV 后再导入');
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = ev => { importCSVText(String(ev.target.result || '')); e.target.value = ''; };
+    reader.readAsText(file, 'UTF-8');
+  });
+
+  // 个人中心
+  $('#btnLogout').addEventListener('click', () => { closeModal('profModalBack'); logout(); });
+  $('#btnChangePwd').addEventListener('click', () => {
+    $('#pwdOld').value = ''; $('#pwdNew').value = ''; $('#pwdErr').textContent = '';
+    openModal('pwdModalBack');
+  });
+  $('#btnSavePwd').addEventListener('click', () => {
+    const old = $('#pwdOld').value, nw = $('#pwdNew').value, err = $('#pwdErr');
+    err.textContent = '';
+    const accs = readAccounts();
+    if(!accs[S.user]){ err.textContent = '账号异常，请重新登录'; return; }
+    if(accs[S.user].pass !== old){ err.textContent = '原密码不正确'; return; }
+    if(nw.length < 4){ err.textContent = '新密码至少 4 位'; return; }
+    accs[S.user].pass = nw; writeAccounts(accs);
+    closeModal('pwdModalBack');
+    toast('密码已修改');
+  });
+  $('#btnClearData').addEventListener('click', () => {
+    closeModal('profModalBack');
+    confirmAction('清空数据', '将删除本账号全部学生、积分、商城与成绩数据，且无法恢复，确定吗？', () => {
+      S.students = []; S.goods = []; S.exams = []; S.activeExam = null;
+      saveData(); renderAll();
+      toast('本账号数据已清空');
+    });
+  });
+
+  // 通用关闭
+  document.addEventListener('click', e => {
+    const c = e.target.closest('[data-close]');
+    if(c) closeModal(c.dataset.close);
+    const back = e.target.closest('.modal-back');
+    if(back && e.target === back) back.classList.add('hidden');
+  });
+  $('#btnConfirmOk').addEventListener('click', () => {
+    const cb = confirmCb; confirmCb = null;
+    closeModal('confirmModalBack');
+    if(cb) cb();
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') $$('.modal-back').forEach(m => m.classList.add('hidden'));
+  });
+}
+
+bindEvents();
+</script>
+</body>
+</html>
+<!-- （注：内容由AI生成） -->
